@@ -134,9 +134,7 @@ app.post("/signup", async (req, res) => {
 
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
-    return res
-      .status(409)
-      .json({ error: "Invalid input. Please check your information." });
+    return res.status(409).json({ error: "Invalid input. Please check your information." });
   }
 
   if (!fullName || !surname || !cell || !idNumber || !password) {
@@ -144,14 +142,13 @@ app.post("/signup", async (req, res) => {
   }
 
   try {
-    const snapshot = await db.ref('users').orderByChild('cell').equalTo(cell).once('value');
-    if (snapshot.exists()) {
+    const cellSnapshot = await db.ref('users').orderByChild('cell').equalTo(cell).once('value');
+    if (cellSnapshot.exists()) {
       return res.status(201).json({ error: "Cell number already registered." });
     }
 
-    try {
-    const snapshot = await db.ref('users').orderByChild('idNumber').equalTo(idNumber).once('value');
-    if (snapshot.exists()) {
+    const idNumberSnapshot = await db.ref('users').orderByChild('idNumber').equalTo(idNumber).once('value');
+    if (idNumberSnapshot.exists()) {
       return res.status(208).json({ error: "ID number already registered." });
     }
 
@@ -170,11 +167,10 @@ app.post("/signup", async (req, res) => {
     res.status(200).json({ message: "User created successfully." });
   } catch (err) {
     console.error("Error during signup:", err);
-    return res
-      .status(500)
-      .json({ error: "Internal server error. Please try again later." });
+    return res.status(500).json({ error: "Internal server error. Please try again later." });
   }
 });
+
 
 const loginLimiter = rateLimit({
   windowMs: 5 * 60 * 1000,
