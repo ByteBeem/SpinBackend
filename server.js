@@ -35,7 +35,7 @@ const firebaseServiceAccount = require("./peermine-843bb-firebase-adminsdk-8h40m
 
 firebase.initializeApp({
   credential: firebase.credential.cert(firebaseServiceAccount),
-  databaseURL: "https://peermine-843bb-default-rtdb.firebaseio.com",
+  databaseURL: "https://spinz-a4867-default-rtdb.firebaseio.com",
 });
 
 const db = firebase.database();
