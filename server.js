@@ -31,7 +31,7 @@ const io = new Server(server, {
   },
 });
 
-const firebaseServiceAccount = require("./peermine-843bb-firebase-adminsdk-8h40m-c6c9b9ec99.json");
+const firebaseServiceAccount = require("./spinz-a4867-firebase-adminsdk-mhswt-ab64a75658.json");
 
 firebase.initializeApp({
   credential: firebase.credential.cert(firebaseServiceAccount),
