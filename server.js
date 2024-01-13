@@ -20,16 +20,9 @@ const randomColor = require('randomcolor');
 
 
 const app = express();
-//const appServer = express();
 const port = process.env.PORT || 3000;
 
 const server = http.createServer(app);
-
-const io = new Server(server, {
-  cors: {
-    origin: '*',
-  },
-});
 
 const firebaseServiceAccount = require("./spinz-a4867-firebase-adminsdk-mhswt-ab64a75658.json");
 
@@ -55,35 +48,7 @@ const corsOptions = {
 };
 
 app.use(cors(corsOptions));
-/*
-const corsOptionsServer = {
-  origin: ['https://peermine.vercel.app', 'https://peermine.vercel.app', 'https://peermine.vercel.app'],
-  credentials: true,
-  exposedHeaders: ['Content-Length', 'X-Content-Type-Options', 'X-Frame-Options'],
-};
 
-appServer.use(cors(corsOptionsServer));
-
-appServer.use((req, res, next) => {
-  const allowedOrigins = ['https://peermine.vercel.app', 'https://peermine.vercel.app', 'https://www.shopient.co.za', 'https://peermine.vercel.app'];
-  const origin = req.headers.origin;
-
-  if (allowedOrigins.includes(origin)) {
-    res.header('Access-Control-Allow-Origin', origin);
-  }
-
-  res.header('Access-Control-Allow-Credentials', true);
-
-  if (req.method === 'OPTIONS') {
-    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE');
-    res.header('Access-Control-Allow-Headers', 'Access-Control-Allow-Origin', 'Content-Type, Authorization');
-    return res.status(200).json({});
-  }
-
-  next();
-});
-
-*/
 const secretKey = process.env.secret_key || "DonaldMxolisiRSA04?????";
 
 app.use((req, res, next) => {
@@ -103,28 +68,6 @@ app.use((req, res, next) => {
   }
 
   next();
-});
-
-app.post('/auth/phone', async (req, res) => {
-  try {
-    const rawPhoneNumber = req.body.phoneNumber;
-
-    // Adjust the phone number format if needed
-    const phoneNumberWithoutLeadingZero = rawPhoneNumber.substring(1);
-    const phoneNumber = `+27${phoneNumberWithoutLeadingZero}`;
-
-    // Send verification code
-    const confirmationResult = await firebase.auth().signInWithPhoneNumber(phoneNumber);
-
-    // Note: You can save confirmationResult to use later for verifying the code
-    // For simplicity, we'll just log it to the console
-    console.log('Confirmation result:', confirmationResult);
-
-    res.status(200).json({ success: true, message: 'Verification code sent successfully' });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ success: false, error: error.message });
-  }
 });
 
 
@@ -252,9 +195,9 @@ app.post('/deposit', async (req, res) => {
     const paymentData = {
       amount: amountValue,
       currency: 'ZAR',
-      cancelUrl: 'https://peermine.vercel.app/deposit',
-      successUrl: 'https://peermine.vercel.app/profile',
-      failureUrl: 'https://peermine.vercel.app/dashboard',
+      cancelUrl: 'https://spinz-three.vercel.app/deposit',
+      successUrl: 'https://spinz-three.vercel.app/profile',
+      failureUrl: 'https://spinz-three.vercel.app/dashboard',
     };
 
     const paymentUrl = 'https://payments.yoco.com/api/checkouts/';
@@ -448,115 +391,6 @@ app.post('/withdraw', async (req, res) => {
     res.status(500).json({ error: 'Internal Server Error' });
   }
 });
-
-const userColors = {};
-
-app.post('/userChat', async (req, res) => {
-  const { token } = req.body;
-  console.log("token", token);
-
-  if (!token) {
-    return res.status(400).json({ error: 'Token is required' });
-  }
-
-  try {
-    const decodedToken = jwt.verify(token, secretKey);
-
-    const userId = decodedToken.cell;
-
-    const snapshot = await db.ref('users').orderByChild('cell').equalTo(decodedToken.cell).once('value');
-    const user = snapshot.val();
-
-   
-
-    if (!user) {
-      return res.status(404).json({ error: 'User not found' });
-    }
-
-
-
-    if (user) {
-    const Username = user[Object.keys(user)[0]].name;
-    const Usersurname = user[Object.keys(user)[0]].surname;
-    const Usercell = user[Object.keys(user)[0]].cell;
-    const Userpassword = user[Object.keys(user)[0]].password;
-    const Userbalance = user[Object.keys(user)[0]].balance;
-      
-
-      // Generate a random color for the user
-      const userColor = randomColor();
-      userColors[userId] = userColor;
-
-      // Fetch all messages from the database
-      const messageSnapshot = await db.ref('messages').once('value');
-      const messages = messageSnapshot.val() || {};
-
-      const messageRows = Object.values(messages);
-
-      // Send the user their name, color, and all messages
-      res.json({ name: Username, color: userColor, messages: messageRows });
-    } else {
-      res.status(404).json({ error: 'User not found' });
-    }
-  } catch (error) {
-    console.error('Error fetching user name:', error);
-    res.status(500).json({ error: 'Internal server error' });
-  }
-});
-
-io.on('connection', (socket) => {
-  console.log(`User connected: ${socket.id}`);
-
-  const userToken = socket.handshake.query.token;
-
-  try {
-    const decodedToken = jwt.verify(userToken, secretKey);
-    const userId = decodedToken.cell;
-
-    // Generate a random color for the user
-    const userColor = randomColor();
-    userColors[userId] = userColor;
-
-    // Send the user their color
-    socket.emit('user-color', { color: userColor });
-
-    socket.on('user-message', async (data) => {
-      const { type, message } = data;
-      const text = message.text;
-      const username = message.name;
-
-      console.log(`User message from ${username}: ${text}`);
-
-      try {
-        // Insert the message into Firebase Realtime Database
-        await db.ref('messages').push({
-          username: username,
-          text: text,
-          color: userColor,
-        });
-      } catch (error) {
-        console.error('Error saving message to database:', error);
-      }
-
-      // Broadcast the message to all connected users
-      io.emit('chat-message', {
-        username: username,
-        text,
-        color: userColor,
-      });
-    });
-
-    socket.on('disconnect', () => {
-      console.log(`User disconnected: ${socket.id}`);
-      // Remove the user's color when they disconnect
-      delete userColors[userId];
-    });
-  } catch (error) {
-    console.error('Error decoding user token:', error);
-    socket.disconnect();
-  }
-});
-
 
 app.post("/login", loginLimiter, async (req, res) => {
   const { cell, password, token } = req.body;
