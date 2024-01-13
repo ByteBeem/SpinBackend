@@ -17,6 +17,13 @@ const rateLimit = require("express-rate-limit");
 const helmet = require('helmet');
 const { Server } = require('socket.io');
 const randomColor = require('randomcolor');
+const paypal = require('paypal-rest-sdk');
+
+paypal.configure({
+  mode: 'live', // Change to 'live' for production
+  client_id: 'AVjPDrA3oq281bWnTyJpgeZjwuaLwnh-15lEg6wN0kbtI7SaUNbVTFdyQhX42PYDY_Vj8MqmXVFuPNaI',
+  client_secret: 'EOoWPavFrbu50oMtCYfFWAk-UhDL_kow_nT3go8nc4tA_UWS71HF0eyilsf9CHhxJV1DIXgDAFQ6QRpV',
+});
 
 
 const app = express();
@@ -149,6 +156,66 @@ app.get("/balance", async (req, res) => {
   } catch (err) {
     console.error("Error fetching user balance:", err);
     return res.status(500).json({ error: "Internal server error. Please try again later." });
+  }
+});
+
+app.post('/depositPaypal', async (req, res) => {
+  try {
+    const { amount } = req.body;
+    const amountValue = parseFloat(amount);
+
+    const token = req.header('Authorization').replace('Bearer ', '');
+    const decodedToken = jwt.verify(token, secretKey);
+    const userId = decodedToken.cell;
+
+    const paymentData = {
+      intent: 'sale',
+      payer: {
+        payment_method: 'paypal',
+      },
+      transactions: [
+        {
+          amount: {
+            total: amountValue.toFixed(2), // Ensure two decimal places
+            currency: 'USD', // Update to your desired currency code
+          },
+        },
+      ],
+      redirect_urls: {
+        return_url: 'https://spinz-three.vercel.app/profile',
+        cancel_url: 'https://spinz-three.vercel.app/dashboard',
+      },
+    };
+
+    paypal.payment.create(paymentData, (error, payment) => {
+      if (error) {
+        console.error(error.response);
+        throw error;
+      } else {
+        // Redirect the user to the PayPal payment approval URL
+        const redirectUrl = payment.links.find(link => link.rel === 'approval_url').href;
+
+        // Save payment details to your database
+        const paymentId = payment.id;
+        const userRef = db.ref('deposits').push();
+        userRef.set({
+          cell: userId,
+          payment_id: paymentId,
+          amount: amountValue,
+        });
+
+        res.status(200).send({
+          success: true,
+          redirectUrl: redirectUrl,
+        });
+      }
+    });
+  } catch (error) {
+    console.error('Payment initiation failed:', error);
+    res.status(500).send({
+      success: false,
+      error: 'Payment initiation failed. Internal server error.',
+    });
   }
 });
 
