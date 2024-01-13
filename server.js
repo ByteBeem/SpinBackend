@@ -139,7 +139,7 @@ app.post("/signup", async (req, res) => {
       .json({ error: "Invalid input. Please check your information." });
   }
 
-  if (!fullName || !surname || !cell || !idNumber‎ || !password) {
+  if (!fullName || !surname || !cell || !idNumber || !password) {
     return res.status(409).json({ error: "All fields are required." });
   }
 
