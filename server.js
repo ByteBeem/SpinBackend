@@ -130,7 +130,7 @@ app.post('/auth/phone', async (req, res) => {
 
 // Signup endpoint
 app.post("/signup", async (req, res) => {
-  const { fullName, surname, cell, idNumber‎, password } = req.body;
+  const { fullName, surname, cell , idNumber‎, password } = req.body;
 
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
