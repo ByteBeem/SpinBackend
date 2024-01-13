@@ -49,7 +49,7 @@ app.use(helmet.hsts({ maxAge: 31536000, includeSubDomains: true, preload: true }
 app.set('trust proxy', 'loopback');
 
 const corsOptions = {
-  origin: ['https://peermine.vercel.app', 'https://peermine.vercel.app', 'https://peermine.vercel.app'],
+  origin: ['https://spinz-spin.vercel.app', 'https://spinz-spin.vercel.app', 'https://spinz-spin.vercel.app'],
   credentials: true,
   exposedHeaders: ['Content-Length', 'X-Content-Type-Options', 'X-Frame-Options'],
 };
@@ -87,7 +87,7 @@ appServer.use((req, res, next) => {
 const secretKey = process.env.secret_key || "DonaldMxolisiRSA04?????";
 
 app.use((req, res, next) => {
-  const allowedOrigins = ['https://peermine.vercel.app', 'https://peermine.vercel.app', 'https://www.shopient.co.za', 'https://peermine.vercel.app'];
+  const allowedOrigins = ['https://spinz-spin.vercel.app', 'https://spinz-spin.vercel.app', 'https://www.shopient.co.za', 'https://spinz-spin.vercel.app'];
   const origin = req.headers.origin;
 
   if (allowedOrigins.includes(origin)) {
@@ -130,7 +130,7 @@ app.post('/auth/phone', async (req, res) => {
 
 // Signup endpoint
 app.post("/signup", async (req, res) => {
-  const { fullName, surname, cell, password } = req.body;
+  const { fullName, surname, cell, idNumber‎, password } = req.body;
 
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
@@ -139,7 +139,7 @@ app.post("/signup", async (req, res) => {
       .json({ error: "Invalid input. Please check your information." });
   }
 
-  if (!fullName || !surname || !cell || !password) {
+  if (!fullName || !surname || !cell || !idNumber‎ || !password) {
     return res.status(409).json({ error: "All fields are required." });
   }
 
@@ -149,6 +149,12 @@ app.post("/signup", async (req, res) => {
       return res.status(201).json({ error: "Cell number already registered." });
     }
 
+    try {
+    const snapshot = await db.ref('users').orderByChild('idNumber').equalTo(idNumber).once('value');
+    if (snapshot.exists()) {
+      return res.status(208).json({ error: "ID number already registered." });
+    }
+
     const hashedPassword = await bcrypt.hash(password, saltRounds);
 
     const userRef = db.ref('users').push();
@@ -156,6 +162,7 @@ app.post("/signup", async (req, res) => {
       name: fullName,
       surname: surname,
       cell: cell,
+      idNumber: idNumber,
       password: hashedPassword,
       balance: 25.0,
     });
