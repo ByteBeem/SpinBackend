@@ -20,7 +20,7 @@ const randomColor = require('randomcolor');
 const paypal = require('paypal-rest-sdk');
 
 paypal.configure({
-  mode: 'live', // Change to 'live' for production
+  mode: 'live',
   client_id: 'AVjPDrA3oq281bWnTyJpgeZjwuaLwnh-15lEg6wN0kbtI7SaUNbVTFdyQhX42PYDY_Vj8MqmXVFuPNaI',
   client_secret: 'EOoWPavFrbu50oMtCYfFWAk-UhDL_kow_nT3go8nc4tA_UWS71HF0eyilsf9CHhxJV1DIXgDAFQ6QRpV',
 });
