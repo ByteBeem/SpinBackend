@@ -12,7 +12,7 @@
     "firebase-admin": "^9.0.0",
     "mysql2": "^2.3.0",
     "csurf": "^1.11.0",
-    "paypal-rest-sdk": "^1.10.0",
+    "paypal-rest-sdk": "^1.8.1",
     "hpp": "^0.2.3",
     "nodemailer": "^6.7.2",
     "axios": "^0.23.0",
