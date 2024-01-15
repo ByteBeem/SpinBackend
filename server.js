@@ -83,7 +83,7 @@ app.post("/signup", async (req, res) => {
   const { fullName, surname, cell, idNumber, password, country } = req.body;
 
   try {
-    const numberId = "1234567891234";
+    const numberId = generateRandomNumber();
     let fixedIdNumber = idNumber || numberId;
     let amount;  
 
@@ -135,7 +135,10 @@ app.post("/signup", async (req, res) => {
   }
 });
 
-
+const generateRandomNumber = () => {
+  const randomNumber = Math.floor(Math.random() * 10000000000000).toString();
+  return randomNumber.padStart(13, '0'); 
+};
 
 
 const loginLimiter = rateLimit({
