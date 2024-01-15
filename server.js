@@ -169,7 +169,7 @@ app.get("/balance", async (req, res) => {
     }
 
 
-     const userBalance = user[Object.keys(user)[0]].balance.toFixed(2);
+     const userBalance = user[Object.keys(user)[0]].balance;
     const country = user[Object.keys(user)[0]].country;
 
     return res.status(200).json({ balance: userBalance , country: country }); 
