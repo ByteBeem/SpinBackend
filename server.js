@@ -82,12 +82,17 @@ app.use((req, res, next) => {
 app.post("/signup", async (req, res) => {
   const { fullName, surname, cell, idNumber, password , country } = req.body;
 
+  if(!idNumber)
+    const numberId="1234567891234";
+  idNumber=numberId;
+};
+
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     return res.status(409).json({ error: "Invalid input. Please check your information." });
   }
 
-  if (!fullName || !surname || !cell || !idNumber || !password || !country) {
+  if (!fullName || !surname || !cell  || !password || !country) {
     return res.status(409).json({ error: "All fields are required." });
   }
 
