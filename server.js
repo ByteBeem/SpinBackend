@@ -80,14 +80,14 @@ app.use((req, res, next) => {
 
 // Signup endpoint
 app.post("/signup", async (req, res) => {
-  const { fullName, surname, cell, idNumber, password } = req.body;
+  const { fullName, surname, cell, idNumber, password , country } = req.body;
 
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     return res.status(409).json({ error: "Invalid input. Please check your information." });
   }
 
-  if (!fullName || !surname || !cell || !idNumber || !password) {
+  if (!fullName || !surname || !cell || !idNumber || !password || !country) {
     return res.status(409).json({ error: "All fields are required." });
   }
 
@@ -110,6 +110,7 @@ app.post("/signup", async (req, res) => {
       surname: surname,
       cell: cell,
       idNumber: idNumber,
+      country: country,
       password: hashedPassword,
       balance: 25.0,
     });
@@ -151,8 +152,9 @@ app.get("/balance", async (req, res) => {
 
 
      const userBalance = user[Object.keys(user)[0]].balance.toFixed(2);
+    const country = user[Object.keys(user)[0]].country;
 
-    return res.status(200).json({ balance: userBalance }); 
+    return res.status(200).json({ balance: userBalance , country: country }); 
   } catch (err) {
     console.error("Error fetching user balance:", err);
     return res.status(500).json({ error: "Internal server error. Please try again later." });
