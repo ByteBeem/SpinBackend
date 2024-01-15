@@ -81,6 +81,12 @@ app.use((req, res, next) => {
 // Signup endpoint
 app.post("/signup", async (req, res) => {
   const { fullName, surname, cell, idNumber, password, country } = req.body;
+  console.log("fullName",fullName);
+  console.log("surname",surname);
+  console.log("cell",cell);
+  console.log("idNumber",idNumber);
+  console.log("password",password);
+   console.log("country",country);
 
   try {
     const numberId = "1234567891234";
