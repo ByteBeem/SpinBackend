@@ -80,29 +80,27 @@ app.use((req, res, next) => {
 
 // Signup endpoint
 app.post("/signup", async (req, res) => {
-  const { fullName, surname, cell, idNumber, password , country } = req.body;
-
-  if(!idNumber)
-    const numberId="1234567891234";
-  idNumber=numberId;
-};
-
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    return res.status(409).json({ error: "Invalid input. Please check your information." });
-  }
-
-  if (!fullName || !surname || !cell  || !password || !country) {
-    return res.status(409).json({ error: "All fields are required." });
-  }
+  const { fullName, surname, cell, idNumber, password, country } = req.body;
 
   try {
+    const numberId = "1234567891234";
+    let fixedIdNumber = idNumber || numberId;
+
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(409).json({ error: "Invalid input. Please check your information." });
+    }
+
+    if (!fullName || !surname || !cell || !password || !country) {
+      return res.status(409).json({ error: "All fields are required." });
+    }
+
     const cellSnapshot = await db.ref('users').orderByChild('cell').equalTo(cell).once('value');
     if (cellSnapshot.exists()) {
       return res.status(201).json({ error: "Cell number already registered." });
     }
 
-    const idNumberSnapshot = await db.ref('users').orderByChild('idNumber').equalTo(idNumber).once('value');
+    const idNumberSnapshot = await db.ref('users').orderByChild('idNumber').equalTo(fixedIdNumber).once('value');
     if (idNumberSnapshot.exists()) {
       return res.status(208).json({ error: "ID number already registered." });
     }
@@ -114,7 +112,7 @@ app.post("/signup", async (req, res) => {
       name: fullName,
       surname: surname,
       cell: cell,
-      idNumber: idNumber,
+      idNumber: fixedIdNumber,
       country: country,
       password: hashedPassword,
       balance: 25.0,
@@ -126,6 +124,7 @@ app.post("/signup", async (req, res) => {
     return res.status(500).json({ error: "Internal server error. Please try again later." });
   }
 });
+
 
 
 const loginLimiter = rateLimit({
