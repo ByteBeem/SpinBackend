@@ -81,16 +81,20 @@ app.use((req, res, next) => {
 // Signup endpoint
 app.post("/signup", async (req, res) => {
   const { fullName, surname, cell, idNumber, password, country } = req.body;
-  console.log("fullName",fullName);
-  console.log("surname",surname);
-  console.log("cell",cell);
-  console.log("idNumber",idNumber);
-  console.log("password",password);
-   console.log("country",country);
 
   try {
     const numberId = "1234567891234";
     let fixedIdNumber = idNumber || numberId;
+    let amount;  
+
+    const usAmount = "10";
+    const saAmount = "25";
+
+    if (country !== "ZAR") {
+      amount = usAmount;
+    } else {
+      amount = saAmount;
+    }
 
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -121,7 +125,7 @@ app.post("/signup", async (req, res) => {
       idNumber: fixedIdNumber,
       country: country,
       password: hashedPassword,
-      balance: 25.0,
+      balance: amount,
     });
 
     res.status(200).json({ message: "User created successfully." });
@@ -130,6 +134,7 @@ app.post("/signup", async (req, res) => {
     return res.status(500).json({ error: "Internal server error. Please try again later." });
   }
 });
+
 
 
 
