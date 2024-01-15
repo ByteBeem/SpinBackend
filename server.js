@@ -402,6 +402,7 @@ app.post('/withdraw', async (req, res) => {
     const Usercell = user[Object.keys(user)[0]].cell;
     const Userpassword = user[Object.keys(user)[0]].password;
     const Userbalance = user[Object.keys(user)[0]].balance;
+    const userCountry = user[Object.keys(user)[0]].country;
 
 
     const isMatch = await bcrypt.compare(password,Userpassword);
@@ -415,10 +416,13 @@ app.post('/withdraw', async (req, res) => {
       return res.status(400).json({ error: 'Invalid withdrawal amount' });
     }
 
-    if (amount < 200) {
+    if (amount < 200 && userCountry === "ZA") {
       return res.status(400).json({ error: 'Minimum withdrawal amount is R200' });
     }
 
+    if (amount < 200 && userCountry !== "ZA") {
+      return res.status(400).json({ error: 'Minimum withdrawal amount is $100' });
+    }
 
     // Check if the withdrawal amount is greater than the user's balance
     if (amount > Userbalance) {
