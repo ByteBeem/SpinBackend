@@ -87,8 +87,8 @@ app.post("/signup", async (req, res) => {
     let fixedIdNumber = idNumber || numberId;
     let amount;  
 
-    const usAmount = "10";
-    const saAmount = "25";
+    const usAmount = "10.0";
+    const saAmount = "25.0";
 
     if (country !== "ZA") {
       amount = usAmount;
