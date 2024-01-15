@@ -90,7 +90,7 @@ app.post("/signup", async (req, res) => {
     const usAmount = "10";
     const saAmount = "25";
 
-    if (country !== "ZAR") {
+    if (country !== "ZA") {
       amount = usAmount;
     } else {
       amount = saAmount;
