@@ -508,7 +508,10 @@ app.post('/testpaypal-webhook', (req, res) => {
 
     console.log(`Deposit completed: Transaction ID ${id}, Amount ${amount.value}`);
   }
-
+  else{
+    
+  console.log("failed");
+  }
   res.status(200).send();
 });
 
