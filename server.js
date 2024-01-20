@@ -483,6 +483,23 @@ app.post('/withdraw', async (req, res) => {
   }
 });
 
+app.get("/paypal-client-id", (req, res) => {
+  const paypalClientId = "AVjPDrA3oq281bWnTyJpgeZjwuaLwnh-15lEg6wN0kbtI7SaUNbVTFdyQhX42PYDY_Vj8MqmXVFuPNaI";
+  res.json({ clientId: paypalClientId });
+});
+
+app.post('/paypal-webhook', (req, res) => {
+  const { event_type, resource } = req.body;
+
+  if (event_type === 'CHECKOUT.ORDER.APPROVED') {
+    const { id, amount, payer } = resource;
+
+    console.log(`Deposit completed: Transaction ID ${id}, Amount ${amount.value}`);
+  }
+
+  res.status(200).send();
+});
+
 app.post("/login", loginLimiter, async (req, res) => {
   const { cell, password, token } = req.body;
 
