@@ -484,7 +484,7 @@ app.post('/withdraw', async (req, res) => {
 });
 
 app.get("/paypal-client-id", (req, res) => {
-  const paypalClientId = "AVjPDrA3oq281bWnTyJpgeZjwuaLwnh-15lEg6wN0kbtI7SaUNbVTFdyQhX42PYDY_Vj8MqmXVFuPNaI";
+  const paypalClientId = "AUKRTZso9tFg8zW9MPdy7ZyoDgSkuE2tX40GxXfj4pKqgxOoxxAQMyVncgaxa6t4nn7aYedCekfefVVu";
   res.json({ clientId: paypalClientId });
 });
 
