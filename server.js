@@ -190,8 +190,6 @@ app.post("/dice", async (req, res) => {
   const userId = decodedToken.cell;
 
   try {
-     const userKey = Object.keys(user)[0];
-    const userRef = db.ref(`users/${userKey}`);
 
     // Generate a unique game ID
     const gameId = generateUniqueId();
