@@ -179,6 +179,76 @@ app.get("/balance", async (req, res) => {
   }
 });
 
+app.post("/startGame", async (req, res) => {
+  const { betAmount } = req.body;
+
+  const gameServer = 'https://word-search-wine.vercel.app/';
+
+  // Validate the bet amount (you can add more validation logic)
+  if (isNaN(parseFloat(betAmount)) || parseFloat(betAmount) <= 0) {
+    return res.status(400).json({ error: "Invalid bet amount" });
+  }
+
+  // Get user ID from the token
+  const token = req.header("Authorization").replace("Bearer ", "");
+  let decodedToken;
+  try {
+    decodedToken = jwt.verify(token, secretKey);
+  } catch (tokenError) {
+    console.error("Error verifying token:", tokenError);
+    return res.status(401).json({ error: "Invalid or expired token" });
+  }
+
+  const userId = decodedToken.cell;
+
+  // Fetch user data from the database
+  try {
+    const snapshot = await db.ref('users').orderByChild('cell').equalTo(decodedToken.cell).once('value');
+    const user = snapshot.val();
+
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    const Userbalance = user[Object.keys(user)[0]].balance;
+
+    // Check if the bet amount is greater than the user's balance
+    if (betAmount > Userbalance) {
+      return res.status(400).json({ error: 'Insufficient balance' });
+    }
+
+    const userKey = Object.keys(user)[0];
+    const userRef = db.ref(`users/${userKey}`);
+
+    // Deduct the bet amount from the user's balance
+    const newBalance = Userbalance - parseFloat(betAmount);
+    await userRef.update({ balance: newBalance });
+
+    // Generate a unique game ID
+    const gameId = generateUniqueId();
+
+    // Log the game activity
+    const gamesPlayedRef = db.ref('gamesPlayed').push();
+    gamesPlayedRef.set({
+      cell: userId,
+      activity_description: "Game",
+      activity_details: `Game Word Search - R${betAmount} - Game ID: ${gameId}`,
+      date_time: new Date(),
+    });
+
+    // Send response with game information
+    res.status(200).json({
+      message: "Game started successfully. Redirecting...",
+      gameLink: `${gameServer}?gameId=${gameId}`,
+    });
+
+  } catch (error) {
+    console.error("Error fetching user data:", error);
+    return res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+
 
   
   app.post("/slot", async (req, res) => {
