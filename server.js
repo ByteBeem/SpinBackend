@@ -179,65 +179,50 @@ app.get("/balance", async (req, res) => {
   }
 });
 
-app.post('/depositPaypal', async (req, res) => {
+
+  
+  app.post("/slot", async (req, res) => {
+  const gameUrl = 'https://spinz-spin.vercel.app/';
+
+  // Get user ID from the token
+  const token = req.header("Authorization").replace("Bearer ", "");
+
+  let decodedToken;
   try {
-    const { amount } = req.body;
-    const amountValue = parseFloat(amount);
+    decodedToken = jwt.verify(token, secretKey);
+  } catch (tokenError) {
+    console.error("Error verifying token:", tokenError);
+    return res.status(401).json({ error: "Invalid or expired token" });
+  }
 
-    const token = req.header('Authorization').replace('Bearer ', '');
-    const decodedToken = jwt.verify(token, secretKey);
-    const userId = decodedToken.cell;
+  const userId = decodedToken.cell;
 
-    const paymentData = {
-      intent: 'sale',
-      payer: {
-        payment_method: 'paypal',
-      },
-      transactions: [
-        {
-          amount: {
-            total: amountValue.toFixed(2), // Ensure two decimal places
-            currency: 'USD', // Update to your desired currency code
-          },
-        },
-      ],
-      redirect_urls: {
-        return_url: 'https://spinz-three.vercel.app/profile',
-        cancel_url: 'https://spinz-three.vercel.app/dashboard',
-      },
-    };
+  
+  const gameId = generateUniqueId();
 
-    paypal.payment.create(paymentData, (error, payment) => {
-      if (error) {
-        console.error(error.response);
-        throw error;
-      } else {
-        // Redirect the user to the PayPal payment approval URL
-        const redirectUrl = payment.links.find(link => link.rel === 'approval_url').href;
-
-        // Save payment details to your database
-        const paymentId = payment.id;
-        const userRef = db.ref('deposits').push();
-        userRef.set({
-          cell: userId,
-          payment_id: paymentId,
-          amount: amountValue,
-        });
-
-        res.status(200).send({
-          success: true,
-          redirectUrl: redirectUrl,
-        });
-      }
+  try {
+      const userRef = db.ref('gamesPlayed').push();
+    userRef.set({
+    cell: userId,
+    activity_description: "Game",
+    activity_details: `Game Slot Machine - Game ID: ${gameId}`,
+    date_time: new Date(),
     });
-  } catch (error) {
-    console.error('Payment initiation failed:', error);
-    res.status(500).send({
-      success: false,
-      error: 'Payment initiation failed. Internal server error.',
+
+    res.status(200).json({
+      message: "Game started successfully. Redirecting...",
+      gameLink: `${gameUrl}?gameId=${gameId}&token=${token}`,
     });
+  } catch (insertError) {
+    console.error("Error inserting activity record:", insertError);
+    res.status(500).json({ error: "Database error" });
   }
 });
+
+function generateUniqueId() { 
+  return Math.random().toString(36).substring(2, 10);
+}
+
 
 app.get("/getUserData", async (req, res) => {
   const token = req.header("Authorization");
