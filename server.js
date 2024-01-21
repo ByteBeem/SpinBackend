@@ -18,13 +18,7 @@ const helmet = require('helmet');
 const { Server } = require('socket.io');
 const randomColor = require('randomcolor');
 const paypal = require('paypal-rest-sdk');
-
-paypal.configure({
-  mode: 'live',
-  client_id: 'AVjPDrA3oq281bWnTyJpgeZjwuaLwnh-15lEg6wN0kbtI7SaUNbVTFdyQhX42PYDY_Vj8MqmXVFuPNaI',
-  client_secret: 'EOoWPavFrbu50oMtCYfFWAk-UhDL_kow_nT3go8nc4tA_UWS71HF0eyilsf9CHhxJV1DIXgDAFQ6QRpV',
-});
-
+const crypto = require('crypto');
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -179,6 +173,48 @@ app.get("/balance", async (req, res) => {
   }
 });
 
+app.post("/dice", async (req, res) => {
+  const gameUrl = 'https://dice-bytebeem.vercel.app/';
+
+  // Get user ID from the token
+  const token = req.header("Authorization").replace("Bearer ", "");
+  
+  let decodedToken;
+  try {
+    decodedToken = jwt.verify(token, secretKey);
+  } catch (tokenError) {
+    console.error("Error verifying token:", tokenError);
+    return res.status(401).json({ error: "Invalid or expired token" });
+  }
+
+  const userId = decodedToken.cell;
+
+  try {
+     const userKey = Object.keys(user)[0];
+    const userRef = db.ref(`users/${userKey}`);
+
+    // Generate a unique game ID
+    const gameId = generateUniqueId();
+
+    // Log the game activity
+    const gamesPlayedRef = db.ref('gamesPlayed').push();
+    gamesPlayedRef.set({
+      cell: userId,
+      activity_description: "Game",
+      activity_details: `Game Dice  - Game ID: ${gameId}`,
+      date_time: new Date(),
+    });
+
+    res.status(200).json({
+      message: "Game started successfully. Redirecting...",
+      gameLink: `${gameUrl}?gameId=${gameId}&token=${token}`,
+    });
+  } catch (insertError) {
+    console.error("Error inserting activity record:", insertError);
+    res.status(500).json({ error: "Database error" });
+  }
+});
+
 app.post("/startGame", async (req, res) => {
   const { betAmount } = req.body;
 
@@ -289,8 +325,12 @@ app.post("/startGame", async (req, res) => {
   }
 });
 
-function generateUniqueId() { 
-  return Math.random().toString(36).substring(2, 10);
+
+
+function generateUniqueId() {
+  const randomBytes = crypto.randomBytes(16);
+  const hash = crypto.createHash('sha256').update(randomBytes).digest('hex');
+  return hash;
 }
 
 
