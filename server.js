@@ -388,7 +388,7 @@ app.post('/deposit', async (req, res) => {
     const payfastResponse = await axios.post(paymentUrl, paymentData, {
       headers: {
         'Content-Type': 'application/json',
-        Authorization: 'Bearer sk_live_15431d914BDxBGa7af8461190a33',
+        Authorization: 'Bearer sk_live_a5fd8de8R4laZKE7b63452594522',
       },
     });
 
