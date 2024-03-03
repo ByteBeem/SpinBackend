@@ -19,6 +19,7 @@ const { Server } = require('socket.io');
 const randomColor = require('randomcolor');
 const paypal = require('paypal-rest-sdk');
 const crypto = require('crypto');
+const paystack = require('paystack')(sk_test_5b9abe0ffe65fc95907c056508e32a011ea7f439);
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -140,6 +141,22 @@ const loginLimiter = rateLimit({
   max: 5,
   message: "Too many login attempts from this IP, please try again later",
 });
+
+
+app.post('/payStack', async (req, res) => {
+  try {
+      const { amount, email, metadata } = req.body;
+      const response = await paystack.transaction.initialize({
+          amount: amount,
+          email: email,
+          metadata: metadata
+      });
+      res.json(response.data);
+  } catch (error) {
+      res.status(500).json({ error: error.message });
+  }
+});
+
 
 app.get("/balance", async (req, res) => {
   const token = req.header("Authorization");
