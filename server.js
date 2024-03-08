@@ -68,32 +68,30 @@ app.use((req, res, next) => {
   next();
 });
 
-const SendSmS=  async (cellphone) => {
+const SendWithdrawalSmS = async (cellphone, bank, account, amount) => {
   var countryCode = '+27'
-  console.log(cellphone)
-  const Phone=cellphone.replace("0", "")
-  console.log(Phone);
+  const Phone = cellphone.replace("0", "")
   mobileNumber = Phone,
-  message = 'A new Device has Logged in to your account.';
+    message = `Spinz4bets: You have requested a withdrawal of R${amount} to ${bank} account no: ${account}. Withdrawals takes 24 hours to reflect.`;
 
-request.post({
-headers: {
-  'content-type' : 'application/x-www-form-urlencoded',
-  'Accepts': 'application/json'
-},
-url:     process.env.BLOWERIO_URL + '/messages',
-form:    {
-  to: countryCode + mobileNumber,
-  message: message
-}
-}, function(error, response, body){
-if (!error && response.statusCode == 201)  {
-  console.log('Message sent!')
-} else {
-  var apiResult = JSON.parse(body)
-  console.log('Error was: ' + apiResult.message)
-}
-})
+  request.post({
+    headers: {
+      'content-type': 'application/x-www-form-urlencoded',
+      'Accepts': 'application/json'
+    },
+    url: process.env.BLOWERIO_URL + '/messages',
+    form: {
+      to: countryCode + mobileNumber,
+      message: message
+    }
+  }, function (error, response, body) {
+    if (!error && response.statusCode == 201) {
+      console.log('Message sent!')
+    } else {
+      var apiResult = JSON.parse(body)
+      console.log('Error was: ' + apiResult.message)
+    }
+  })
 }
 
 
@@ -104,7 +102,7 @@ app.post("/signup", async (req, res) => {
   try {
     const numberId = generateRandomNumber();
     let fixedIdNumber = idNumber || numberId;
-    let amount;  
+    let amount;
 
     const usAmount = "10.00";
     const saAmount = "25.00";
@@ -156,7 +154,7 @@ app.post("/signup", async (req, res) => {
 
 const generateRandomNumber = () => {
   const randomNumber = Math.floor(Math.random() * 10000000000000).toString();
-  return randomNumber.padStart(13, '0'); 
+  return randomNumber.padStart(13, '0');
 };
 
 
@@ -169,18 +167,18 @@ const loginLimiter = rateLimit({
 
 app.post('/pay', async (req, res) => {
   try {
-      const { amount, email } = req.body;
-      const response = await axios.post('https://api.paystack.co/transaction/initialize', {
-          amount: amount,
-          email: email
-      }, {
-          headers: {
-              Authorization: `Bearer ${PAYSTACK_SECRET_KEY}`
-          }
-      });
-      res.json(response.data);
+    const { amount, email } = req.body;
+    const response = await axios.post('https://api.paystack.co/transaction/initialize', {
+      amount: amount,
+      email: email
+    }, {
+      headers: {
+        Authorization: `Bearer ${PAYSTACK_SECRET_KEY}`
+      }
+    });
+    res.json(response.data);
   } catch (error) {
-      res.status(500).json({ error: error.message });
+    res.status(500).json({ error: error.message });
   }
 });
 
@@ -207,10 +205,10 @@ app.get("/balance", async (req, res) => {
     }
 
 
-     const userBalance = user[Object.keys(user)[0]].balance;
+    const userBalance = user[Object.keys(user)[0]].balance;
     const country = user[Object.keys(user)[0]].country;
 
-    return res.status(200).json({ balance: userBalance , country: country }); 
+    return res.status(200).json({ balance: userBalance, country: country });
   } catch (err) {
     console.error("Error fetching user balance:", err);
     return res.status(500).json({ error: "Internal server error. Please try again later." });
@@ -222,7 +220,7 @@ app.post("/dice", async (req, res) => {
 
 
   const token = req.header("Authorization").replace("Bearer ", "");
-  
+
   let decodedToken;
   try {
     decodedToken = jwt.verify(token, secretKey);
@@ -235,10 +233,10 @@ app.post("/dice", async (req, res) => {
 
   try {
 
-   
+
     const gameId = generateUniqueId();
 
-  
+
     const gamesPlayedRef = db.ref('gamesPlayed').push();
     gamesPlayedRef.set({
       cell: userId,
@@ -262,12 +260,12 @@ app.post("/startGame", async (req, res) => {
 
   const gameServer = 'https://word-search-wine.vercel.app/';
 
-  
+
   if (isNaN(parseFloat(betAmount)) || parseFloat(betAmount) <= 0) {
     return res.status(400).json({ error: "Invalid bet amount" });
   }
 
- 
+
   const token = req.header("Authorization").replace("Bearer ", "");
   let decodedToken;
   try {
@@ -290,7 +288,7 @@ app.post("/startGame", async (req, res) => {
 
     const Userbalance = user[Object.keys(user)[0]].balance;
 
-    
+
     if (betAmount > Userbalance) {
       return res.status(400).json({ error: 'Insufficient balance' });
     }
@@ -298,11 +296,11 @@ app.post("/startGame", async (req, res) => {
     const userKey = Object.keys(user)[0];
     const userRef = db.ref(`users/${userKey}`);
 
-    
+
     const newBalance = Userbalance - parseFloat(betAmount);
     await userRef.update({ balance: newBalance });
 
-   
+
     const gameId = generateUniqueId();
 
     const gamesPlayedRef = db.ref('gamesPlayed').push();
@@ -326,11 +324,11 @@ app.post("/startGame", async (req, res) => {
 
 
 
-  
-  app.post("/slot", async (req, res) => {
+
+app.post("/slot", async (req, res) => {
   const gameUrl = 'https://spinz-spin.vercel.app/';
 
- 
+
   const token = req.header("Authorization").replace("Bearer ", "");
 
   let decodedToken;
@@ -343,16 +341,16 @@ app.post("/startGame", async (req, res) => {
 
   const userId = decodedToken.cell;
 
-  
+
   const gameId = generateUniqueId();
 
   try {
-      const userRef = db.ref('gamesPlayed').push();
+    const userRef = db.ref('gamesPlayed').push();
     userRef.set({
-    cell: userId,
-    activity_description: "Game",
-    activity_details: `Game Slot Machine - Game ID: ${gameId}`,
-    date_time: new Date(),
+      cell: userId,
+      activity_description: "Game",
+      activity_details: `Game Slot Machine - Game ID: ${gameId}`,
+      date_time: new Date(),
     });
 
     res.status(200).json({
@@ -395,12 +393,12 @@ app.get("/getUserData", async (req, res) => {
     }
 
 
-     const name = user[Object.keys(user)[0]].name;
+    const name = user[Object.keys(user)[0]].name;
     const surname = user[Object.keys(user)[0]].surname;
     const cell = user[Object.keys(user)[0]].cell;
     const balance = user[Object.keys(user)[0]].balance;
 
-    return res.status(200).json({ name: name  , cell: cell  , surname: surname  , balance: balance }); 
+    return res.status(200).json({ name: name, cell: cell, surname: surname, balance: balance });
   } catch (err) {
     console.error("Error fetching user info:", err);
     return res.status(500).json({ error: "Internal server error. Please try again later." });
@@ -409,10 +407,10 @@ app.get("/getUserData", async (req, res) => {
 
 app.post('/deposit', async (req, res) => {
   try {
-    
+
     const { amount } = req.body;
     const amountValue = parseFloat(amount) * 100;
-    
+
     const token = req.header('Authorization').replace('Bearer ', '');
     const paymentData = {
       amount: amountValue,
@@ -443,11 +441,11 @@ app.post('/deposit', async (req, res) => {
 
 
       const userRef = db.ref('deposits').push();
-    userRef.set({
+      userRef.set({
         cell: userId,
         payment_id: paymentId,
         amount: amountValue / 100,
-    });
+      });
 
       res.status(200).send({
         success: true,
@@ -478,7 +476,7 @@ app.post('/deposit', async (req, res) => {
 
 function sendDepositConfirmationEmail(userId, amount) {
   const transporter = nodemailer.createTransport({
-   
+
     service: 'Gmail',
     auth: {
       user: 'heckyl66@gmail.com',
@@ -488,7 +486,7 @@ function sendDepositConfirmationEmail(userId, amount) {
 
   const mailOptions = {
     from: "heckyl66@gmail.com",
-    to: "spinz.spin@proton.me", 
+    to: "spinz.spin@proton.me",
     subject: "Deposit Confirmation",
     html: `
       <p>Deposit Confirmation Details:</p>
@@ -503,10 +501,10 @@ function sendDepositConfirmationEmail(userId, amount) {
   transporter.sendMail(mailOptions, (emailError, info) => {
     if (emailError) {
       console.error("Error sending email:", emailError);
-     
+
     } else {
       console.log("Email sent: " + info.response);
-     
+
     }
   });
 }
@@ -526,7 +524,7 @@ app.post('/withdraw', async (req, res) => {
     const snapshot = await db.ref('users').orderByChild('cell').equalTo(decodedToken.cell).once('value');
     const user = snapshot.val();
 
-   
+
 
     if (!user) {
       return res.status(404).json({ error: 'User not found' });
@@ -540,13 +538,13 @@ app.post('/withdraw', async (req, res) => {
     const userCountry = user[Object.keys(user)[0]].country;
 
 
-    const isMatch = await bcrypt.compare(password,Userpassword);
+    const isMatch = await bcrypt.compare(password, Userpassword);
 
     if (!isMatch) {
       return res.status(400).json({ error: 'Incorrect Password' });
     }
 
-    
+
     if (isNaN(amount) || amount <= 0) {
       return res.status(400).json({ error: 'Invalid withdrawal amount' });
     }
@@ -559,18 +557,18 @@ app.post('/withdraw', async (req, res) => {
       return res.status(400).json({ error: 'Minimum withdrawal amount is $100' });
     }
 
-    
+
     if (amount > Userbalance) {
       return res.status(400).json({ error: 'Insufficient balance' });
     }
 
     const userKey = Object.keys(user)[0];
     const userRef = db.ref(`users/${userKey}`);
-    
+
     const newBalance = Userbalance - amount;
     await userRef.update({ balance: newBalance });
 
-   
+
     const withdrawalRef = db.ref('withdrawals').push();
     withdrawalRef.set({
       user_id: userId,
@@ -580,15 +578,15 @@ app.post('/withdraw', async (req, res) => {
     });
 
     const transporter = nodemailer.createTransport({
-    
-    service: 'Gmail',
-    auth: {
-      user: 'heckyl66@gmail.com',
-      pass: 'wvzqobuvijaribkb',
-    },
-  });
 
- 
+      service: 'Gmail',
+      auth: {
+        user: 'heckyl66@gmail.com',
+        pass: 'wvzqobuvijaribkb',
+      },
+    });
+
+
     const mailOptions = {
       from: 'heckyl66@gmail.com',
       to: 'spinz.spin@proton.me',
@@ -610,6 +608,7 @@ app.post('/withdraw', async (req, res) => {
 
 
     await transporter.sendMail(mailOptions);
+    SendWithdrawalSmS(Usercell, bank,Account , amount);
 
     res.status(200).json({ message: 'Withdrawal successful', newBalance });
   } catch (error) {
@@ -643,9 +642,9 @@ app.post('/testpaypal-webhook', (req, res) => {
 
     console.log(`Deposit completed: Transaction ID ${id}, Amount ${amount.value}`);
   }
-  else{
-    
-  console.log("failed");
+  else {
+
+    console.log("failed");
   }
   res.status(200).send();
 });
@@ -664,7 +663,7 @@ app.post("/login", loginLimiter, async (req, res) => {
       try {
         decodedToken = jwt.verify(token, secretKey);
       } catch (err) {
-       
+
       }
 
       const userId = decodedToken.userId;
@@ -730,10 +729,10 @@ app.post("/login", loginLimiter, async (req, res) => {
         { expiresIn: "7D" }
       );
 
-     
+
       SendSmS(user.cell);
       res.status(200).json({ token: newToken });
-      
+
     }
   } catch (err) {
     console.error("Error during login:", err);
