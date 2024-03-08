@@ -467,6 +467,8 @@ app.post("/spinzbetswebhook/webhookV1/url", jsonParser, async function (req, res
       throw new Error("Invalid event or status");
     }
 
+    console.log(event);
+
     const amountMade = parseFloat(event.data.amount / 100);
     const snapshot = await db.ref('users').orderByChild('cell').equalTo(event.data.customer.phone).once('value');
     const user = snapshot.val();
