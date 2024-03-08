@@ -170,7 +170,8 @@ app.post('/pay', async (req, res) => {
     const { amount, email } = req.body;
     const response = await axios.post('https://api.paystack.co/transaction/initialize', {
       amount: amount,
-      email: email
+      email: email,
+      
     }, {
       headers: {
         Authorization: `Bearer ${PAYSTACK_SECRET_KEY}`
@@ -516,6 +517,8 @@ app.post("/spinzbetswebhook/webhookV1/url", function(req, res) {
  
   const event = req.body;
   console.log(event);
+  console.log(event.event);
+  console.log(event.data);
   }
   res.send(200);
 });
