@@ -616,7 +616,7 @@ app.post("/login", loginLimiter, async (req, res) => {
 
       }
 
-      const userId = decodedToken.userId;
+      
       const snapshot = await db.ref('users').orderByChild('cell').equalTo(cell).once('value');
       const userData = snapshot.val();
 
