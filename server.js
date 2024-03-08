@@ -194,18 +194,7 @@ app.post("/signup", async (req, res) => {
   const { fullName, surname, cell, idNumber, password, country , Age , Dob , Gender } = req.body;
 
   try {
-    if(Age < 18){
-      return res.status(400).json({ error: "Sorry , You are under age of 18." });
-    }
-
-    if(!Gender){
-      return res.status(400).json({ error: "Sorry , Your Infomation is not valid." });
-    }
-
-    if(!Dob){
-      return res.status(400).json({ error: "Sorry , Date of Birth Required." });
-    }
-
+    
     const numberId = generateRandomNumber();
     let fixedIdNumber = idNumber || numberId;
     let amount;
