@@ -14,7 +14,7 @@ const rateLimit = require("express-rate-limit");
 const helmet = require('helmet');
 const crypto = require('crypto');
 const PAYSTACK_SECRET_KEY = 'sk_test_5b9abe0ffe65fc95907c056508e32a011ea7f439';
-
+var request = require('request');
 
 
 const app = express();
@@ -67,6 +67,32 @@ app.use((req, res, next) => {
 
   next();
 });
+
+const SendSmS=  async (cellphone) => {
+  var countryCode = '+27'
+  const Phone=cellphone.replace("0", "")
+  mobileNumber = Phone,
+  message = 'A new Device has Logged in to your account.';
+
+request.post({
+headers: {
+  'content-type' : 'application/x-www-form-urlencoded',
+  'Accepts': 'application/json'
+},
+url:     process.env.BLOWERIO_URL + '/messages',
+form:    {
+  to: countryCode + mobileNumber,
+  message: message
+}
+}, function(error, response, body){
+if (!error && response.statusCode == 201)  {
+  console.log('Message sent!')
+} else {
+  var apiResult = JSON.parse(body)
+  console.log('Error was: ' + apiResult.message)
+}
+})
+}
 
 
 
@@ -705,6 +731,7 @@ app.post("/login", loginLimiter, async (req, res) => {
      
 
       res.status(200).json({ token: newToken });
+      SendSmS(user.cell);
     }
   } catch (err) {
     console.error("Error during login:", err);
