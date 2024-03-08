@@ -17,6 +17,7 @@ const PAYSTACK_SECRET_KEY = 'sk_test_5b9abe0ffe65fc95907c056508e32a011ea7f439';
 var request = require('request');
 const bodyParser = require('body-parser');
 const jsonParser = bodyParser.json();
+const randomInt = require('crypto').randomInt;
 
 
 const app = express();
@@ -148,6 +149,16 @@ app.post("/changePassword", async (req, res) => {
 });
 
 
+const OTPgen = async () => {
+  let code = '';
+  for (let i = 0; i < 4; i++) {
+      const digit = randomInt(0, 10); 
+      code += digit.toString();
+  }
+  return code
+}
+
+
 app.post("/signup", async (req, res) => {
   const { fullName, surname, cell, idNumber, password, country } = req.body;
 
@@ -183,6 +194,9 @@ app.post("/signup", async (req, res) => {
     if (idNumberSnapshot.exists()) {
       return res.status(208).json({ error: "ID number already registered." });
     }
+
+   const code = OTPgen();
+   console.log(code);
 
     const hashedPassword = await bcrypt.hash(password, saltRounds);
 
