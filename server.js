@@ -521,6 +521,13 @@ if (event.event === 'charge.success'){
     let amountMade=parseFloat(event.data.amount/100);
     console.log(amountMade);
 
+    const userRef = db.ref('deposits').push();
+      userRef.set({
+        user: event.data,
+       
+      });
+      sendDepositConfirmationEmail(event.data.customer.email, event.data.amount);
+
   }else{
     res.send(400);
   }
