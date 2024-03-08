@@ -198,7 +198,7 @@ app.post("/signup", async (req, res) => {
       return res.status(400).json({ error: "Sorry , You are under age of 18." });
     }
 
-    if(Gender !== 'Male' || Gender !== 'Female'){
+    if(!Gender){
       return res.status(400).json({ error: "Sorry , Your Infomation is not valid." });
     }
 
