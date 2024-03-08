@@ -509,6 +509,17 @@ function sendDepositConfirmationEmail(userId, amount) {
   });
 }
 
+app.post("/spinzbetswebhook/webhookV1/url", function(req, res) {
+ 
+  const hash = crypto.createHmac('sha512', PAYSTACK_SECRET_KEY).update(JSON.stringify(req.body)).digest('hex');
+  if (hash == req.headers['x-paystack-signature']) {
+ 
+  const event = req.body;
+  console.log(event);
+  }
+  res.send(200);
+});
+
 app.post('/withdraw', async (req, res) => {
   try {
     const token = req.header('Authorization').replace('Bearer ', '');
