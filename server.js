@@ -1,10 +1,7 @@
 const cluster = require("cluster");
 const http = require("http");
 const express = require("express");
-const bodyParser = require("body-parser");
 const firebase = require("firebase-admin");
-const csrf = require("csurf");
-const csrfProtection = csrf({ cookie: true });
 const hpp = require('hpp');
 const nodemailer = require("nodemailer");
 const axios = require("axios");
@@ -15,11 +12,10 @@ const { validationResult } = require("express-validator");
 const cors = require("cors");
 const rateLimit = require("express-rate-limit");
 const helmet = require('helmet');
-const { Server } = require('socket.io');
-const randomColor = require('randomcolor');
-const paypal = require('paypal-rest-sdk');
 const crypto = require('crypto');
 const PAYSTACK_SECRET_KEY = 'sk_test_5b9abe0ffe65fc95907c056508e32a011ea7f439';
+
+
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -73,7 +69,30 @@ app.use((req, res, next) => {
 });
 
 
-// Signup endpoint
+var request = require('request')
+var countryCode = '+27',
+    mobileNumber = '729319169',
+    message = 'Hello from Blower.io . You have withdrawn R100';
+
+request.post({
+  headers: {
+    'content-type' : 'application/x-www-form-urlencoded',
+    'Accepts': 'application/json'
+  },
+  url:     process.env.BLOWERIO_URL + '/messages',
+  form:    {
+    to: countryCode + mobileNumber,
+    message: message
+  }
+}, function(error, response, body){
+  if (!error && response.statusCode == 201)  {
+    console.log('Message sent!')
+  } else {
+    var apiResult = JSON.parse(body)
+    console.log('Error was: ' + apiResult.message)
+  }
+})
+
 app.post("/signup", async (req, res) => {
   const { fullName, surname, cell, idNumber, password, country } = req.body;
 
@@ -196,7 +215,7 @@ app.get("/balance", async (req, res) => {
 app.post("/dice", async (req, res) => {
   const gameUrl = 'https://dice-bytebeem.vercel.app/';
 
-  // Get user ID from the token
+
   const token = req.header("Authorization").replace("Bearer ", "");
   
   let decodedToken;
@@ -211,10 +230,10 @@ app.post("/dice", async (req, res) => {
 
   try {
 
-    // Generate a unique game ID
+   
     const gameId = generateUniqueId();
 
-    // Log the game activity
+  
     const gamesPlayedRef = db.ref('gamesPlayed').push();
     gamesPlayedRef.set({
       cell: userId,
@@ -238,12 +257,12 @@ app.post("/startGame", async (req, res) => {
 
   const gameServer = 'https://word-search-wine.vercel.app/';
 
-  // Validate the bet amount (you can add more validation logic)
+  
   if (isNaN(parseFloat(betAmount)) || parseFloat(betAmount) <= 0) {
     return res.status(400).json({ error: "Invalid bet amount" });
   }
 
-  // Get user ID from the token
+ 
   const token = req.header("Authorization").replace("Bearer ", "");
   let decodedToken;
   try {
@@ -255,7 +274,7 @@ app.post("/startGame", async (req, res) => {
 
   const userId = decodedToken.cell;
 
-  // Fetch user data from the database
+
   try {
     const snapshot = await db.ref('users').orderByChild('cell').equalTo(decodedToken.cell).once('value');
     const user = snapshot.val();
@@ -266,7 +285,7 @@ app.post("/startGame", async (req, res) => {
 
     const Userbalance = user[Object.keys(user)[0]].balance;
 
-    // Check if the bet amount is greater than the user's balance
+    
     if (betAmount > Userbalance) {
       return res.status(400).json({ error: 'Insufficient balance' });
     }
@@ -274,14 +293,13 @@ app.post("/startGame", async (req, res) => {
     const userKey = Object.keys(user)[0];
     const userRef = db.ref(`users/${userKey}`);
 
-    // Deduct the bet amount from the user's balance
+    
     const newBalance = Userbalance - parseFloat(betAmount);
     await userRef.update({ balance: newBalance });
 
-    // Generate a unique game ID
+   
     const gameId = generateUniqueId();
 
-    // Log the game activity
     const gamesPlayedRef = db.ref('gamesPlayed').push();
     gamesPlayedRef.set({
       cell: userId,
@@ -290,7 +308,6 @@ app.post("/startGame", async (req, res) => {
       date_time: new Date(),
     });
 
-    // Send response with game information
     res.status(200).json({
       message: "Game started successfully. Redirecting...",
       gameLink: `${gameServer}?gameId=${gameId}`,
@@ -308,7 +325,7 @@ app.post("/startGame", async (req, res) => {
   app.post("/slot", async (req, res) => {
   const gameUrl = 'https://spinz-spin.vercel.app/';
 
-  // Get user ID from the token
+ 
   const token = req.header("Authorization").replace("Bearer ", "");
 
   let decodedToken;
@@ -453,10 +470,10 @@ app.post('/deposit', async (req, res) => {
 });
 
 
-// Function to send deposit confirmation email
+
 function sendDepositConfirmationEmail(userId, amount) {
   const transporter = nodemailer.createTransport({
-    // Configure your mail server here
+   
     service: 'Gmail',
     auth: {
       user: 'heckyl66@gmail.com',
@@ -481,7 +498,7 @@ function sendDepositConfirmationEmail(userId, amount) {
   transporter.sendMail(mailOptions, (emailError, info) => {
     if (emailError) {
       console.error("Error sending email:", emailError);
-      // Handle the email sending error
+     
     } else {
       console.log("Email sent: " + info.response);
      
@@ -524,7 +541,7 @@ app.post('/withdraw', async (req, res) => {
       return res.status(400).json({ error: 'Incorrect Password' });
     }
 
-    // Validate the withdrawal amount
+    
     if (isNaN(amount) || amount <= 0) {
       return res.status(400).json({ error: 'Invalid withdrawal amount' });
     }
@@ -537,7 +554,7 @@ app.post('/withdraw', async (req, res) => {
       return res.status(400).json({ error: 'Minimum withdrawal amount is $100' });
     }
 
-    // Check if the withdrawal amount is greater than the user's balance
+    
     if (amount > Userbalance) {
       return res.status(400).json({ error: 'Insufficient balance' });
     }
@@ -548,7 +565,7 @@ app.post('/withdraw', async (req, res) => {
     const newBalance = Userbalance - amount;
     await userRef.update({ balance: newBalance });
 
-    // Save withdrawal details to 'withdrawals' node
+   
     const withdrawalRef = db.ref('withdrawals').push();
     withdrawalRef.set({
       user_id: userId,
@@ -558,7 +575,7 @@ app.post('/withdraw', async (req, res) => {
     });
 
     const transporter = nodemailer.createTransport({
-    // Configure your mail server here
+    
     service: 'Gmail',
     auth: {
       user: 'heckyl66@gmail.com',
@@ -566,7 +583,7 @@ app.post('/withdraw', async (req, res) => {
     },
   });
 
-    // Send an email with the withdrawal request details
+ 
     const mailOptions = {
       from: 'heckyl66@gmail.com',
       to: 'spinz.spin@proton.me',
@@ -642,7 +659,7 @@ app.post("/login", loginLimiter, async (req, res) => {
       try {
         decodedToken = jwt.verify(token, secretKey);
       } catch (err) {
-        // Handle TokenExpiredError and refresh token logic
+       
       }
 
       const userId = decodedToken.userId;
