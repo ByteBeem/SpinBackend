@@ -166,7 +166,6 @@ const loginLimiter = rateLimit({
   message: "Too many login attempts from this IP, please try again later",
 });
 
-
 app.post('/pay', async (req, res) => {
   try {
     const { amount, email, token } = req.body;
@@ -181,14 +180,12 @@ app.post('/pay', async (req, res) => {
     const cellphone = decodedToken.cell.toString();
     console.log(cellphone);
 
-    
     const response = await axios.post('https://api.paystack.co/transaction/initialize', {
       amount: amount,
-      phone: cellphone,
       email: email,
-      first_name: '0729319169',
-
-
+      metadata: {
+        customer_token: token 
+      }
     }, {
       headers: {
         Authorization: `Bearer ${PAYSTACK_SECRET_KEY}`
@@ -200,6 +197,45 @@ app.post('/pay', async (req, res) => {
   }
 });
 
+
+
+app.post("/spinzbetswebhook/webhookV1/url", jsonParser, async function (req, res) {
+  try {
+    const hash = crypto.createHmac('sha512', PAYSTACK_SECRET_KEY).update(JSON.stringify(req.body)).digest('hex');
+    if (hash !== req.headers['x-paystack-signature']) {
+      throw new Error("Invalid signature");
+    }
+
+    const event = req.body;
+    if (event.event !== 'charge.success' || event.data.status !== 'success') {
+      throw new Error("Invalid event or status");
+    }
+
+    console.log(event);
+
+    const amountMade = parseFloat(event.data.amount / 100);
+    const snapshot = await db.ref('users').orderByChild('cell').equalTo(event.data.customer.email).once('value');
+    const user = snapshot.val();
+    if (!user) {
+      throw new Error("User not found");
+    }
+
+    const userKey = Object.keys(user)[0];
+    const userBalance = user[userKey].balance;
+    const newBalance = parseFloat(userBalance + amountMade);
+    await db.ref(`users/${userKey}`).update({ balance: newBalance });
+
+    const userRef = db.ref('deposits').push();
+    userRef.set({ user: event.data });
+
+    sendDepositConfirmationEmail(event.data.customer.email, amountMade);
+
+    res.sendStatus(200);
+  } catch (error) {
+    console.error("Error:", error.message);
+    res.sendStatus(400);
+  }
+});
 
 app.get("/balance", async (req, res) => {
   const token = req.header("Authorization");
@@ -460,43 +496,6 @@ function sendDepositConfirmationEmail(userId, amount) {
     }
   });
 }
-app.post("/spinzbetswebhook/webhookV1/url", jsonParser, async function (req, res) {
-  try {
-    const hash = crypto.createHmac('sha512', PAYSTACK_SECRET_KEY).update(JSON.stringify(req.body)).digest('hex');
-    if (hash !== req.headers['x-paystack-signature']) {
-      throw new Error("Invalid signature");
-    }
-
-    const event = req.body;
-    if (event.event !== 'charge.success' || event.data.status !== 'success') {
-      throw new Error("Invalid event or status");
-    }
-
-    console.log(event);
-
-    const amountMade = parseFloat(event.data.amount / 100);
-    const snapshot = await db.ref('users').orderByChild('cell').equalTo(event.data.customer.email).once('value');
-    const user = snapshot.val();
-    if (!user) {
-      throw new Error("User not found");
-    }
-
-    const userKey = Object.keys(user)[0];
-    const userBalance = user[userKey].balance;
-    const newBalance = parseFloat(userBalance + amountMade);
-    await db.ref(`users/${userKey}`).update({ balance: newBalance });
-
-    const userRef = db.ref('deposits').push();
-    userRef.set({ user: event.data });
-
-    sendDepositConfirmationEmail(event.data.customer.email, amountMade);
-
-    res.sendStatus(200);
-  } catch (error) {
-    console.error("Error:", error.message);
-    res.sendStatus(400);
-  }
-});
 
 app.post('/withdraw', async (req, res) => {
   try {
