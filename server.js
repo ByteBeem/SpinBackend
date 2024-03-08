@@ -101,6 +101,53 @@ const SendWithdrawalSmS = async (cellphone, bank, account, amount) => {
 };
 
 
+app.post("/changePassword", async (req, res) => {
+  const { oldPassword, newPassword, token } = req.body;
+
+  let decodedToken;
+  try {
+    decodedToken = jwt.verify(token, secretKey);
+  } catch (tokenError) {
+    console.error("Error verifying token:", tokenError);
+    return res.status(401).json({ error: "Invalid or expired token" });
+  }
+
+  const cellphone = decodedToken.cell.toString();
+
+  const snapshot = await db.ref('users').orderByChild('cell').equalTo(cellphone).once('value');
+  const userData = snapshot.val();
+
+  if (!userData) {
+    return res.status(404).json({ error: "User not found." });
+  }
+
+  const userValues = Object.values(userData);
+  const user = userValues[0];
+
+  if (!user) {
+    return res.status(404).json({ error: "User not found." });
+  }
+
+  const isMatch = await bcrypt.compare(oldPassword, user.password);
+
+  if (!isMatch) {
+    return res.status(401).json({ error: "Incorrect password." });
+  }
+
+  const userKey = Object.keys(userData)[0];
+  const userRef = db.ref(`users/${userKey}`);
+
+  try {
+    const hashedNewPassword = await bcrypt.hash(newPassword, saltRounds);
+    await userRef.update({ password: hashedNewPassword });
+    return res.status(200).json({ message: "Password updated successfully." });
+  } catch (updateError) {
+    console.error("Error updating password:", updateError);
+    return res.status(500).json({ error: "Internal server error." });
+  }
+});
+
+
 app.post("/signup", async (req, res) => {
   const { fullName, surname, cell, idNumber, password, country } = req.body;
 
