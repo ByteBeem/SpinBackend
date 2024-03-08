@@ -242,18 +242,12 @@ app.post("/signup", async (req, res) => {
 });
 
 app.post("/confirm-otp", async (req, res) => {
-  const {  code , token } = req.body;
+  const {  code , cell } = req.body;
 
   try {
-    let decodedToken;
-    try {
-      decodedToken = jwt.verify(token, secretKey);
-    } catch (tokenError) {
-      console.error("Error verifying token:", tokenError);
-      return res.status(401).json({ error: "Invalid or expired token" });
-    }
     
-    const otpSnapshot = await db.ref('otpCodes').orderByChild('cell').equalTo(decodedToken.cell).once('value');
+    
+    const otpSnapshot = await db.ref('otpCodes').orderByChild('cell').equalTo(cell).once('value');
     const otpData = otpSnapshot.val();
     const matchingCode = Object.values(otpData).find(otp => otp.code === code);
 
