@@ -15,6 +15,7 @@ const helmet = require('helmet');
 const crypto = require('crypto');
 const PAYSTACK_SECRET_KEY = 'sk_test_5b9abe0ffe65fc95907c056508e32a011ea7f439';
 var request = require('request');
+const jsonParser = bodyParser.json();
 
 
 const app = express();
@@ -453,43 +454,40 @@ function sendDepositConfirmationEmail(userId, amount) {
     }
   });
 }
-
-app.post("/spinzbetswebhook/webhookV1/url", async function (req, res) {
-
-  const hash = crypto.createHmac('sha512', PAYSTACK_SECRET_KEY).update(JSON.stringify(req.body)).digest('hex');
-  if (hash == req.headers['x-paystack-signature']) {
-
-    const event = req.body;
-    if (event.event === 'charge.success') {
-      if (event.data.status === 'success') {
-        let amountMade = parseFloat(event.data.amount / 100);
-        const snapshot = await db.ref('users').orderByChild('cell').equalTo(event.data.customer.phone).once('value');
-        const user = snapshot.val();
-        const Userbalance = user[Object.keys(user)[0]].balance;
-
-        const userKey = Object.keys(user)[0];
-        const userUpdate = db.ref(`users/${userKey}`);
-
-        const newBalance = parseFloat(Userbalance + amountMade);
-        await userUpdate.update({ balance: newBalance });
-        const userRef = db.ref('deposits').push();
-        userRef.set({
-          user: event.data,
-
-        });
-
-        sendDepositConfirmationEmail(event.data.customer.email, amountMade);
-
-      } else {
-        res.send(400);
-      }
-
-    } else {
-      res.send(401);
+app.post("/spinzbetswebhook/webhookV1/url", jsonParser, async function (req, res) {
+  try {
+    const hash = crypto.createHmac('sha512', PAYSTACK_SECRET_KEY).update(JSON.stringify(req.body)).digest('hex');
+    if (hash !== req.headers['x-paystack-signature']) {
+      throw new Error("Invalid signature");
     }
 
+    const event = req.body;
+    if (event.event !== 'charge.success' || event.data.status !== 'success') {
+      throw new Error("Invalid event or status");
+    }
+
+    const amountMade = parseFloat(event.data.amount / 100);
+    const snapshot = await db.ref('users').orderByChild('cell').equalTo(event.data.customer.phone).once('value');
+    const user = snapshot.val();
+    if (!user) {
+      throw new Error("User not found");
+    }
+    
+    const userKey = Object.keys(user)[0];
+    const userBalance = user[userKey].balance;
+    const newBalance = parseFloat(userBalance + amountMade);
+    await db.ref(`users/${userKey}`).update({ balance: newBalance });
+    
+    const userRef = db.ref('deposits').push();
+    userRef.set({ user: event.data });
+
+    sendDepositConfirmationEmail(event.data.customer.email, amountMade);
+
+    res.sendStatus(200);
+  } catch (error) {
+    console.error("Error:", error.message);
+    res.sendStatus(400); 
   }
-  res.send(200);
 });
 
 app.post('/withdraw', async (req, res) => {
