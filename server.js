@@ -178,16 +178,16 @@ app.post('/pay', async (req, res) => {
       return res.status(401).json({ error: "Invalid or expired token" });
     }
 
-    const Phone = decodedToken.cell.toString();
-console.log(Phone);
+    const cellphone = decodedToken.cell.toString();
+    console.log(cellphone);
 
-    console.log(Phone);
+    
     const response = await axios.post('https://api.paystack.co/transaction/initialize', {
       amount: amount,
-      phone: Phone,
+      phone: cellphone,
       email: email,
-      first_name:Phone,
-      
+      first_name: '0729319169',
+
 
     }, {
       headers: {
@@ -480,12 +480,12 @@ app.post("/spinzbetswebhook/webhookV1/url", jsonParser, async function (req, res
     if (!user) {
       throw new Error("User not found");
     }
-    
+
     const userKey = Object.keys(user)[0];
     const userBalance = user[userKey].balance;
     const newBalance = parseFloat(userBalance + amountMade);
     await db.ref(`users/${userKey}`).update({ balance: newBalance });
-    
+
     const userRef = db.ref('deposits').push();
     userRef.set({ user: event.data });
 
@@ -494,7 +494,7 @@ app.post("/spinzbetswebhook/webhookV1/url", jsonParser, async function (req, res
     res.sendStatus(200);
   } catch (error) {
     console.error("Error:", error.message);
-    res.sendStatus(400); 
+    res.sendStatus(400);
   }
 });
 
@@ -622,7 +622,7 @@ app.post("/login", loginLimiter, async (req, res) => {
 
       }
 
-      
+
       const snapshot = await db.ref('users').orderByChild('cell').equalTo(cell).once('value');
       const userData = snapshot.val();
 
