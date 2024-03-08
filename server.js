@@ -616,39 +616,6 @@ app.post('/withdraw', async (req, res) => {
     res.status(500).json({ error: 'Internal Server Error' });
   }
 });
-
-app.get("/paypal-client-id", (req, res) => {
-  const paypalClientId = "Aft3OCQujzt42-4_EAtWyIeLnZ-RsLynG4BbhVztRHfKHLe2OxPEl3a1HakXW1b4ASv1YCsUaOjLgm-A";
-  res.json({ clientId: paypalClientId });
-});
-
-app.post('/paypal-webhook', (req, res) => {
-  const { event_type, resource } = req.body;
-
-  if (event_type === 'CHECKOUT.ORDER.APPROVED') {
-    const { id, amount, payer } = resource;
-
-    console.log(`Deposit completed: Transaction ID ${id}, Amount ${amount.value}`);
-  }
-
-  res.status(200).send();
-});
-
-app.post('/testpaypal-webhook', (req, res) => {
-  const { event_type, resource } = req.body;
-
-  if (event_type === 'CHECKOUT.ORDER.APPROVED') {
-    const { id, amount, payer } = resource;
-
-    console.log(`Deposit completed: Transaction ID ${id}, Amount ${amount.value}`);
-  }
-  else {
-
-    console.log("failed");
-  }
-  res.status(200).send();
-});
-
 app.post("/login", loginLimiter, async (req, res) => {
   const { cell, password, token } = req.body;
 
@@ -730,7 +697,7 @@ app.post("/login", loginLimiter, async (req, res) => {
       );
 
 
-      SendSmS(user.cell);
+      
       res.status(200).json({ token: newToken });
 
     }
