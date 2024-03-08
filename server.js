@@ -69,8 +69,8 @@ app.use((req, res, next) => {
 
   next();
 });
-
 const SendWithdrawalSmS = async (cellphone, bank, account, amount) => {
+  console.log(cellphone , bank , amount);
   var countryCode = '+27'
   const Phone = cellphone.replace("0", "")
   mobileNumber = Phone,
@@ -90,12 +90,15 @@ const SendWithdrawalSmS = async (cellphone, bank, account, amount) => {
     if (!error && response.statusCode == 201) {
       console.log('Message sent!')
     } else {
-      var apiResult = JSON.parse(body)
-      console.log('Error was: ' + apiResult.message)
+      if (response && response.headers['content-type'] && response.headers['content-type'].includes('application/json')) {
+        var apiResult = JSON.parse(body);
+        console.log('Error was: ' + apiResult.message);
+      } else {
+        console.log('Error response:', body);
+      }
     }
-  })
-}
-
+  });
+};
 
 
 app.post("/signup", async (req, res) => {
@@ -184,7 +187,7 @@ app.post('/pay', async (req, res) => {
       amount: amount,
       email: email,
       metadata: {
-        customer_token: token 
+        customer_token: token
       }
     }, {
       headers: {
@@ -211,7 +214,7 @@ app.post("/spinzbetswebhook/webhookV1/url", jsonParser, async function (req, res
       throw new Error("Invalid event or status");
     }
 
-    console.log(event);
+
     let decodedToken;
     try {
       decodedToken = jwt.verify(event.data.metadata.customer_token, secretKey);
@@ -221,7 +224,7 @@ app.post("/spinzbetswebhook/webhookV1/url", jsonParser, async function (req, res
     }
 
     const cellphone = decodedToken.cell.toString();
-    console.log(cellphone);
+
 
     const amountMade = parseFloat(event.data.amount / 100);
     const snapshot = await db.ref('users').orderByChild('cell').equalTo(cellphone).once('value');
