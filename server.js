@@ -517,7 +517,7 @@ app.post("/spinzbetswebhook/webhookV1/url", function(req, res) {
  
   const event = req.body;
 if (event.event === 'charge.success'){
-  if(event.data.status === 'success' && event.event.data.gateway_response === "Approved"){
+  if(event.data.status === 'success' ){
     let amountMade=parseFloat(event.data.amount/100);
     console.log(amountMade);
 
