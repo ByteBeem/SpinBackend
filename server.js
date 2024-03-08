@@ -244,6 +244,9 @@ app.post("/signup", async (req, res) => {
 app.post("/confirm-otp", async (req, res) => {
   const {  code , cell } = req.body;
 
+  console.log(code );
+  console.log(cell );
+
   try {
     
     
