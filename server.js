@@ -182,8 +182,8 @@ app.post('/pay', async (req, res) => {
     console.log(Phone);
     const response = await axios.post('https://api.paystack.co/transaction/initialize', {
       amount: amount,
-      email: email,
-      phone: Phone,
+      email: Phone,
+      
 
     }, {
       headers: {
@@ -471,7 +471,7 @@ app.post("/spinzbetswebhook/webhookV1/url", jsonParser, async function (req, res
     console.log(event);
 
     const amountMade = parseFloat(event.data.amount / 100);
-    const snapshot = await db.ref('users').orderByChild('cell').equalTo(event.data.customer.phone).once('value');
+    const snapshot = await db.ref('users').orderByChild('cell').equalTo(event.data.customer.email).once('value');
     const user = snapshot.val();
     if (!user) {
       throw new Error("User not found");
