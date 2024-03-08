@@ -179,6 +179,7 @@ app.post('/pay', async (req, res) => {
     }
 
     const Phone = decodedToken.cell;
+    console.log(Phone);
     const response = await axios.post('https://api.paystack.co/transaction/initialize', {
       amount: amount,
       email: email,
