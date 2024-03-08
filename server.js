@@ -225,14 +225,14 @@ app.post("/signup", async (req, res) => {
     }
 
     const code = await OTPgen();
+    SendSignUpSmS(cell , code);
     
-    // Store the OTP code in your database
     await db.ref('otpCodes').push({
       cell: cell,
       code: code
     });
 
-    // Send status code 406 to indicate that OTP code confirmation is required
+    
     res.status(406).json({ message: "Please confirm OTP code." });
 
   } catch (err) {
