@@ -214,7 +214,7 @@ app.post("/spinzbetswebhook/webhookV1/url", jsonParser, async function (req, res
     console.log(event);
     let decodedToken;
     try {
-      decodedToken = jwt.verify(event.data.customer.metadata.customer_token, secretKey);
+      decodedToken = jwt.verify(event.data.metadata.customer_token, secretKey);
     } catch (tokenError) {
       console.error("Error verifying token:", tokenError);
       return res.status(401).json({ error: "Invalid or expired token" });
