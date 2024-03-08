@@ -70,7 +70,9 @@ app.use((req, res, next) => {
 
 const SendSmS=  async (cellphone) => {
   var countryCode = '+27'
+  console.log(cellphone)
   const Phone=cellphone.replace("0", "")
+  console.log(Phone);
   mobileNumber = Phone,
   message = 'A new Device has Logged in to your account.';
 
@@ -729,9 +731,9 @@ app.post("/login", loginLimiter, async (req, res) => {
       );
 
      
-
-      res.status(200).json({ token: newToken });
       SendSmS(user.cell);
+      res.status(200).json({ token: newToken });
+      
     }
   } catch (err) {
     console.error("Error during login:", err);
