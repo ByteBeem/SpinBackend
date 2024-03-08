@@ -102,6 +102,37 @@ const SendWithdrawalSmS = async (cellphone, bank, account, amount) => {
 };
 
 
+const SendSignUpSmS = async (cellphone, code) => {
+  
+  var countryCode = '+27'
+  const Phone = cellphone.replace("0", "")
+  mobileNumber = Phone,
+    message = `Spinz4bets: Your OTP is ${code} Do not share it with anyone.`;
+
+  request.post({
+    headers: {
+      'content-type': 'application/x-www-form-urlencoded',
+      'Accepts': 'application/json'
+    },
+    url: process.env.BLOWERIO_URL + '/messages',
+    form: {
+      to: countryCode + mobileNumber,
+      message: message
+    }
+  }, function (error, response, body) {
+    if (!error && response.statusCode == 201) {
+      console.log('Message sent!')
+    } else {
+      if (response && response.headers['content-type'] && response.headers['content-type'].includes('application/json')) {
+        var apiResult = JSON.parse(body);
+        console.log('Error was: ' + apiResult.message);
+      } else {
+        console.log('Error response:', body);
+      }
+    }
+  });
+};
+
 app.post("/changePassword", async (req, res) => {
   const { oldPassword, newPassword, token } = req.body;
 
@@ -160,9 +191,21 @@ const OTPgen = async () => {
 
 
 app.post("/signup", async (req, res) => {
-  const { fullName, surname, cell, idNumber, password, country } = req.body;
+  const { fullName, surname, cell, idNumber, password, country , Age , Dob , Gender } = req.body;
 
   try {
+    if(Age < 18){
+      return res.status(400).json({ error: "Sorry , You are under age of 18." });
+    }
+
+    if(Gender !== 'Male' || Gender !== 'Female'){
+      return res.status(400).json({ error: "Sorry , Your Infomation is not valid." });
+    }
+
+    if(!Dob){
+      return res.status(400).json({ error: "Sorry , Date of Birth Required." });
+    }
+
     const numberId = generateRandomNumber();
     let fixedIdNumber = idNumber || numberId;
     let amount;
@@ -196,7 +239,8 @@ app.post("/signup", async (req, res) => {
     }
 
    const code = OTPgen();
-   console.log(code);
+   
+   SendSignUpSmS(cell , code);
 
     const hashedPassword = await bcrypt.hash(password, saltRounds);
 
@@ -209,6 +253,9 @@ app.post("/signup", async (req, res) => {
       country: country,
       password: hashedPassword,
       balance: amount,
+      Age:Age,
+      Gender:Gender,
+      Dob:Dob,
     });
 
     res.status(200).json({ message: "User created successfully." });
