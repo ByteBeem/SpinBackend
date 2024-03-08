@@ -69,29 +69,6 @@ app.use((req, res, next) => {
 });
 
 
-var request = require('request')
-var countryCode = '+27',
-    mobileNumber = '729319169',
-    message = 'Hello from Blower.io . You have withdrawn R100';
-
-request.post({
-  headers: {
-    'content-type' : 'application/x-www-form-urlencoded',
-    'Accepts': 'application/json'
-  },
-  url:     process.env.BLOWERIO_URL + '/messages',
-  form:    {
-    to: countryCode + mobileNumber,
-    message: message
-  }
-}, function(error, response, body){
-  if (!error && response.statusCode == 201)  {
-    console.log('Message sent!')
-  } else {
-    var apiResult = JSON.parse(body)
-    console.log('Error was: ' + apiResult.message)
-  }
-})
 
 app.post("/signup", async (req, res) => {
   const { fullName, surname, cell, idNumber, password, country } = req.body;
