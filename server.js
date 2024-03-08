@@ -167,11 +167,21 @@ const loginLimiter = rateLimit({
 
 app.post('/pay', async (req, res) => {
   try {
-    const { amount, email } = req.body;
+    const { amount, email, token } = req.body;
+    let decodedToken;
+    try {
+      decodedToken = jwt.verify(token, secretKey);
+    } catch (tokenError) {
+      console.error("Error verifying token:", tokenError);
+      return res.status(401).json({ error: "Invalid or expired token" });
+    }
+
+    const Phone = decodedToken.cell;
     const response = await axios.post('https://api.paystack.co/transaction/initialize', {
       amount: amount,
       email: email,
-      
+      phone: Phone,
+
     }, {
       headers: {
         Authorization: `Bearer ${PAYSTACK_SECRET_KEY}`
@@ -189,7 +199,7 @@ app.get("/balance", async (req, res) => {
 
   if (!token || !token.startsWith("Bearer ")) {
     return res.redirect(401, "https://spinz-three.vercel.app/");
-}
+  }
 
 
   const tokenValue = token.replace("Bearer ", "");
@@ -200,7 +210,7 @@ app.get("/balance", async (req, res) => {
     const snapshot = await db.ref('users').orderByChild('cell').equalTo(decodedToken.cell).once('value');
     const user = snapshot.val();
 
-    
+
 
     if (!user) {
       return res.status(404).json({ error: "User not found." });
@@ -379,7 +389,7 @@ app.get("/getUserData", async (req, res) => {
 
   if (!token || !token.startsWith("Bearer ")) {
     return res.redirect(401, "https://spinz-three.vercel.app/");
-}
+  }
 
 
   const tokenValue = token.replace("Bearer ", "");
@@ -444,32 +454,40 @@ function sendDepositConfirmationEmail(userId, amount) {
   });
 }
 
-app.post("/spinzbetswebhook/webhookV1/url", function(req, res) {
- 
+app.post("/spinzbetswebhook/webhookV1/url", async function (req, res) {
+
   const hash = crypto.createHmac('sha512', PAYSTACK_SECRET_KEY).update(JSON.stringify(req.body)).digest('hex');
   if (hash == req.headers['x-paystack-signature']) {
- 
-  const event = req.body;
-if (event.event === 'charge.success'){
-  if(event.data.status === 'success' ){
-    let amountMade=parseFloat(event.data.amount/100);
 
-    const userRef = db.ref('deposits').push();
-      userRef.set({
-        user: event.data,
-       
-      });
-     
-      sendDepositConfirmationEmail(event.data.customer.email, event.data.amount);
+    const event = req.body;
+    if (event.event === 'charge.success') {
+      if (event.data.status === 'success') {
+        let amountMade = parseFloat(event.data.amount / 100);
+        const snapshot = await db.ref('users').orderByChild('cell').equalTo(event.data.customer.phone).once('value');
+        const user = snapshot.val();
+        const Userbalance = user[Object.keys(user)[0]].balance;
 
-  }else{
-    res.send(400);
-  }
-  
-}else{
-  res.send(401);
-}
-  
+        const userKey = Object.keys(user)[0];
+        const userUpdate = db.ref(`users/${userKey}`);
+
+        const newBalance = parseFloat(Userbalance + amountMade);
+        await userUpdate.update({ balance: newBalance });
+        const userRef = db.ref('deposits').push();
+        userRef.set({
+          user: event.data,
+
+        });
+
+        sendDepositConfirmationEmail(event.data.customer.email, amountMade);
+
+      } else {
+        res.send(400);
+      }
+
+    } else {
+      res.send(401);
+    }
+
   }
   res.send(200);
 });
@@ -573,7 +591,7 @@ app.post('/withdraw', async (req, res) => {
 
 
     await transporter.sendMail(mailOptions);
-    SendWithdrawalSmS(Usercell, bank,Account , amount);
+    SendWithdrawalSmS(Usercell, bank, Account, amount);
 
     res.status(200).json({ message: 'Withdrawal successful', newBalance });
   } catch (error) {
@@ -662,7 +680,7 @@ app.post("/login", loginLimiter, async (req, res) => {
       );
 
 
-      
+
       res.status(200).json({ token: newToken });
 
     }
