@@ -481,7 +481,7 @@ function sendDepositConfirmationEmail(userId, amount) {
     service: 'Gmail',
     auth: {
       user: 'heckyl66@gmail.com',
-      pass: 'wvzqobuvijaribkb',
+      pass: 'izpanbvcuqhsvlyb',
     },
   });
 
