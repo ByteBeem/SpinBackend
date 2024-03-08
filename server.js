@@ -408,74 +408,6 @@ app.get("/getUserData", async (req, res) => {
   }
 });
 
-app.post('/deposit', async (req, res) => {
-  try {
-
-    const { amount } = req.body;
-    const amountValue = parseFloat(amount) * 100;
-
-    const token = req.header('Authorization').replace('Bearer ', '');
-    const paymentData = {
-      amount: amountValue,
-      currency: 'ZAR',
-      cancelUrl: 'https://spinz-three.vercel.app/deposit',
-      successUrl: 'https://spinz-three.vercel.app/profile',
-      failureUrl: 'https://spinz-three.vercel.app/dashboard',
-    };
-
-    const paymentUrl = 'https://payments.yoco.com/api/checkouts/';
-
-    const decodedToken = jwt.verify(token, secretKey);
-    const userId = decodedToken.cell;
-
-    const payfastResponse = await axios.post(paymentUrl, paymentData, {
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: 'Bearer sk_live_a5fd8de8R4laZKE7b63452594522',
-      },
-    });
-
-    if (payfastResponse.status === 200) {
-      const { redirectUrl, data } = payfastResponse.data;
-
-      sendDepositConfirmationEmail(userId, amount);
-
-      const paymentId = payfastResponse.data.id;
-
-
-      const userRef = db.ref('deposits').push();
-      userRef.set({
-        cell: userId,
-        payment_id: paymentId,
-        amount: amountValue / 100,
-      });
-
-      res.status(200).send({
-        success: true,
-        redirectUrl: redirectUrl,
-      });
-    } else {
-      console.error(
-        'Payment initiation failed. PayFast returned:',
-        payfastResponse.status,
-        payfastResponse.statusText,
-        payfastResponse.data
-      );
-      res.status(500).send({
-        success: false,
-        error: 'Payment initiation failed. PayFast returned an unexpected status.',
-      });
-    }
-  } catch (error) {
-    console.error('Payment initiation failed:', error);
-    res.status(500).send({
-      success: false,
-      error: 'Payment initiation failed. Internal server error.',
-    });
-  }
-});
-
-
 
 function sendDepositConfirmationEmail(userId, amount) {
   const transporter = nodemailer.createTransport({
@@ -489,7 +421,7 @@ function sendDepositConfirmationEmail(userId, amount) {
 
   const mailOptions = {
     from: "heckyl66@gmail.com",
-    to: "spinz.spin@proton.me",
+    to: "donald.mxolisi@proton.me",
     subject: "Deposit Confirmation",
     html: `
       <p>Deposit Confirmation Details:</p>
@@ -521,13 +453,13 @@ app.post("/spinzbetswebhook/webhookV1/url", function(req, res) {
 if (event.event === 'charge.success'){
   if(event.data.status === 'success' ){
     let amountMade=parseFloat(event.data.amount/100);
-    console.log(amountMade);
 
     const userRef = db.ref('deposits').push();
       userRef.set({
         user: event.data,
        
       });
+     
       sendDepositConfirmationEmail(event.data.customer.email, event.data.amount);
 
   }else{
