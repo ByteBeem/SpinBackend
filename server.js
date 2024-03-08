@@ -188,8 +188,9 @@ app.get("/balance", async (req, res) => {
   const token = req.header("Authorization");
 
   if (!token || !token.startsWith("Bearer ")) {
-    return res.status(401).json({ error: "Unauthorized. Token not provided." });
-  }
+    return res.redirect(401, "https://spinz-three.vercel.app/");
+}
+
 
   const tokenValue = token.replace("Bearer ", "");
 
@@ -377,8 +378,9 @@ app.get("/getUserData", async (req, res) => {
   const token = req.header("Authorization");
 
   if (!token || !token.startsWith("Bearer ")) {
-    return res.status(401).json({ error: "Unauthorized. Token not provided." });
-  }
+    return res.redirect(401, "https://spinz-three.vercel.app/");
+}
+
 
   const tokenValue = token.replace("Bearer ", "");
 
