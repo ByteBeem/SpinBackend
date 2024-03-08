@@ -212,9 +212,19 @@ app.post("/spinzbetswebhook/webhookV1/url", jsonParser, async function (req, res
     }
 
     console.log(event);
+    let decodedToken;
+    try {
+      decodedToken = jwt.verify(event.data.customer.metadata.customer_token, secretKey);
+    } catch (tokenError) {
+      console.error("Error verifying token:", tokenError);
+      return res.status(401).json({ error: "Invalid or expired token" });
+    }
+
+    const cellphone = decodedToken.cell.toString();
+    console.log(cellphone);
 
     const amountMade = parseFloat(event.data.amount / 100);
-    const snapshot = await db.ref('users').orderByChild('cell').equalTo(event.data.customer.email).once('value');
+    const snapshot = await db.ref('users').orderByChild('cell').equalTo(cellphone).once('value');
     const user = snapshot.val();
     if (!user) {
       throw new Error("User not found");
