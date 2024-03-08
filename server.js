@@ -183,6 +183,7 @@ app.post('/pay', async (req, res) => {
     const response = await axios.post('https://api.paystack.co/transaction/initialize', {
       amount: amount,
       phone: Phone,
+      email: email,
       
 
     }, {
