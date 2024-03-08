@@ -516,9 +516,19 @@ app.post("/spinzbetswebhook/webhookV1/url", function(req, res) {
   if (hash == req.headers['x-paystack-signature']) {
  
   const event = req.body;
-  console.log(event);
-  console.log(event.event);
-  console.log(event.data);
+if (event.event === 'charge.success'){
+  if(event.data.status === 'success' && event.event.data.gateway_response === "Approved"){
+    let amountMade=parseFloat(event.data.amount/100);
+    console.log(amountMade);
+
+  }else{
+    res.send(400);
+  }
+  
+}else{
+  res.send(401);
+}
+  
   }
   res.send(200);
 });
