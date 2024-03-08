@@ -227,9 +227,9 @@ app.post("/signup", async (req, res) => {
       return res.status(208).json({ error: "ID number already registered." });
     }
 
-   const code = OTPgen();
-   
-   SendSignUpSmS(cell , code);
+    const code = await OTPgen();
+    SendSignUpSmS(cell, code);
+    
 
     const hashedPassword = await bcrypt.hash(password, saltRounds);
 
