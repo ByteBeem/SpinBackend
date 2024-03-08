@@ -188,13 +188,10 @@ const OTPgen = async () => {
   }
   return code
 }
-
-
 app.post("/signup", async (req, res) => {
   const { fullName, surname, cell, idNumber, password, country , Age , Dob , Gender } = req.body;
 
   try {
-    
     const numberId = generateRandomNumber();
     let fixedIdNumber = idNumber || numberId;
     let amount;
@@ -228,31 +225,70 @@ app.post("/signup", async (req, res) => {
     }
 
     const code = await OTPgen();
-    SendSignUpSmS(cell, code);
     
-
-    const hashedPassword = await bcrypt.hash(password, saltRounds);
-
-    const userRef = db.ref('users').push();
-    userRef.set({
-      name: fullName,
-      surname: surname,
+    // Store the OTP code in your database
+    await db.ref('otpCodes').push({
       cell: cell,
-      idNumber: fixedIdNumber,
-      country: country,
-      password: hashedPassword,
-      balance: amount,
-      Age:Age,
-      Gender:Gender,
-      Dob:Dob,
+      code: code
     });
 
-    res.status(200).json({ message: "User created successfully." });
+    // Send status code 406 to indicate that OTP code confirmation is required
+    res.status(406).json({ message: "Please confirm OTP code." });
+
   } catch (err) {
     console.error("Error during signup:", err);
     return res.status(500).json({ error: "Internal server error. Please try again later." });
   }
 });
+
+app.post("/confirm-otp", async (req, res) => {
+  const { cell, code } = req.body;
+
+  try {
+    
+    const otpSnapshot = await db.ref('otpCodes').orderByChild('cell').equalTo(cell).once('value');
+    const otpData = otpSnapshot.val();
+    const matchingCode = Object.values(otpData).find(otp => otp.code === code);
+
+    if (matchingCode) {
+     
+      const { fullName, surname, idNumber, password, country, Age, Dob, Gender } = req.body;
+
+     
+      const hashedPassword = await bcrypt.hash(password, saltRounds);
+
+   
+      const userRef = db.ref('users').push();
+      userRef.set({
+        name: fullName,
+        surname: surname,
+        cell: cell,
+        idNumber: idNumber,
+        country: country,
+        password: hashedPassword,
+        balance: amount,
+        Age: Age,
+        Gender: Gender,
+        Dob: Dob,
+      });
+
+      
+      await db.ref('otpCodes').orderByChild('cell').equalTo(cell).once('value', snapshot => {
+        snapshot.forEach(child => {
+          child.ref.remove();
+        });
+      });
+
+      return res.status(200).json({ message: "User created successfully." });
+    } else {
+      return res.status(403).json({ error: "Invalid OTP code." });
+    }
+  } catch (err) {
+    console.error("Error during OTP confirmation:", err);
+    return res.status(500).json({ error: "Internal server error. Please try again later." });
+  }
+});
+
 
 const generateRandomNumber = () => {
   const randomNumber = Math.floor(Math.random() * 10000000000000).toString();
