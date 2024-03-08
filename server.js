@@ -15,6 +15,7 @@ const helmet = require('helmet');
 const crypto = require('crypto');
 const PAYSTACK_SECRET_KEY = 'sk_test_5b9abe0ffe65fc95907c056508e32a011ea7f439';
 var request = require('request');
+const bodyParser = require('body-parser');
 const jsonParser = bodyParser.json();
 
 
