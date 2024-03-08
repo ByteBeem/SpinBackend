@@ -580,14 +580,14 @@ app.post('/withdraw', async (req, res) => {
       service: 'Gmail',
       auth: {
         user: 'heckyl66@gmail.com',
-        pass: 'wvzqobuvijaribkb',
+        pass: 'izpanbvcuqhsvlyb',
       },
     });
 
 
     const mailOptions = {
       from: 'heckyl66@gmail.com',
-      to: 'spinz.spin@proton.me',
+      to: 'donald.mxolisi@proton.me',
       subject: 'Withdrawal Request',
       html: `
         <p>Withdrawal Request Details:</p>
