@@ -105,7 +105,7 @@ app.post("/signup", async (req, res) => {
     let amount;
 
     const usAmount = "10.00";
-    const saAmount = "25.00";
+    const saAmount = "10.00";
 
     if (country !== "ZA") {
       amount = usAmount;
@@ -198,7 +198,7 @@ app.get("/balance", async (req, res) => {
     const snapshot = await db.ref('users').orderByChild('cell').equalTo(decodedToken.cell).once('value');
     const user = snapshot.val();
 
-    console.log("Snapshot:", snapshot.val());
+    
 
     if (!user) {
       return res.status(404).json({ error: "User not found." });
