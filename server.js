@@ -107,7 +107,7 @@ const SendSignUpSmS = async (cellphone, code) => {
   var countryCode = '+27'
   const Phone = cellphone.replace("0", "")
   mobileNumber = Phone,
-    message = `Spinz4bets: Your OTP is ${code} Do not share it with anyone.`;
+    message = `Spinz4bets.co.za: Your OTP is ${code} Do not share it with anyone.`;
 
   request.post({
     headers: {
