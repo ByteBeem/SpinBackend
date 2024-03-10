@@ -278,7 +278,7 @@ app.post("/confirm-otp", async (req, res) => {
         idNumber: idNumber,
         country: country,
         password: hashedPassword,
-        balance: amount,
+        balance: '10.00',
         Age: Age,
         Gender: Gender,
         Dob: Dob,
