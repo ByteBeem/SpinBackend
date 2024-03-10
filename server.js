@@ -264,7 +264,7 @@ app.post("/confirm-otp", async (req, res) => {
 
     if (matchingCode) {
      
-      const { fullName, surname, idNumber, password, country, Age, Dob, Gender } = matchingCode;
+      const { fullName, surname, idNumber, password, country } = matchingCode;
 
      
       const hashedPassword = await bcrypt.hash(password, saltRounds);
@@ -279,9 +279,7 @@ app.post("/confirm-otp", async (req, res) => {
         country: country,
         password: hashedPassword,
         balance: '10.00',
-        Age: Age,
-        Gender: Gender,
-        Dob: Dob,
+        
       });
 
       
