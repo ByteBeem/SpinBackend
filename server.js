@@ -229,7 +229,15 @@ app.post("/signup", async (req, res) => {
     
     await db.ref('otpCodes').push({
       cell: cell,
-      code: code
+      code: code,
+      fullName: fullName,
+      surname:surname,
+      idNumber:idNumber,
+      password: password, 
+      country : country,
+      Age :Age,
+      Dob :Dob,
+      Gender: Gender,
     });
 
     
@@ -256,7 +264,7 @@ app.post("/confirm-otp", async (req, res) => {
 
     if (matchingCode) {
      
-      const { fullName, surname, idNumber, password, country, Age, Dob, Gender } = req.body;
+      const { fullName, surname, idNumber, password, country, Age, Dob, Gender } = matchingCode;
 
      
       const hashedPassword = await bcrypt.hash(password, saltRounds);
