@@ -43,7 +43,7 @@ app.use(helmet.hsts({ maxAge: 31536000, includeSubDomains: true, preload: true }
 app.set('trust proxy', 'loopback');
 
 const corsOptions = {
-  origin: ['https://spinz-three.vercel.app', 'https://spinz-spin.vercel.app', 'https://spinz-three.vercel.app/'],
+  origin: ['https://spinz4bets.co.za', 'https://spinz4bets.co.za', 'https://spinz4bets.co.za'],
   credentials: true,
   exposedHeaders: ['Content-Length', 'X-Content-Type-Options', 'X-Frame-Options'],
 };
@@ -53,7 +53,7 @@ app.use(cors(corsOptions));
 const secretKey = process.env.secret_key || "DonaldMxolisiRSA04?????";
 
 app.use((req, res, next) => {
-  const allowedOrigins = ['https://spinz-three.vercel.app', 'https://spinz-three.vercel.app', 'https://spinz-three.vercel.app', 'https://spinz-three.vercel.app'];
+  const allowedOrigins = ['https://spinz4bets.co.za', 'https://spinz4bets.co.za', 'https://spinz4bets.co.za', 'https://spinz4bets.co.za'];
   const origin = req.headers.origin;
 
   if (allowedOrigins.includes(origin)) {
