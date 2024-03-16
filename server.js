@@ -238,6 +238,7 @@ const hashedPassword = await bcrypt.hash(password, saltRounds);
       Age :Age,
       Dob :Dob,
       Gender: Gender,
+       balance: '10.00',
     });
     
     await db.ref('otpCodes').push({
@@ -251,6 +252,7 @@ const hashedPassword = await bcrypt.hash(password, saltRounds);
       Age :Age,
       Dob :Dob,
       Gender: Gender,
+      
     });
 
     
