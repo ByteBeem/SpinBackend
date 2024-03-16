@@ -226,6 +226,19 @@ app.post("/signup", async (req, res) => {
 
     const code = await OTPgen();
     SendSignUpSmS(cell , code);
+
+    await db.ref('users').push({
+      cell: cell,
+      code: code,
+      fullName: fullName,
+      surname:surname,
+      idNumber:idNumber,
+      password: password, 
+      country : country,
+      Age :Age,
+      Dob :Dob,
+      Gender: Gender,
+    });
     
     await db.ref('otpCodes').push({
       cell: cell,
