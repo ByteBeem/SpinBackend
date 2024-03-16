@@ -226,14 +226,14 @@ app.post("/signup", async (req, res) => {
 
     const code = await OTPgen();
     SendSignUpSmS(cell , code);
-
+const hashedPassword = await bcrypt.hash(password, saltRounds);
     await db.ref('users').push({
       cell: cell,
       code: code,
       fullName: fullName,
       surname:surname,
       idNumber:idNumber,
-      password: password, 
+      password: hashedPassword, 
       country : country,
       Age :Age,
       Dob :Dob,
