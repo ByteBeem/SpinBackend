@@ -14,6 +14,7 @@ const rateLimit = require("express-rate-limit");
 const helmet = require('helmet');
 const crypto = require('crypto');
 const PAYSTACK_SECRET_KEY = 'sk_test_5b9abe0ffe65fc95907c056508e32a011ea7f439';
+const PAYSTACK_SECRET_KEY_Turf= 'sk_live_c7f56700900bf838a119edfc6eefb2c0d795305d';
 var request = require('request');
 const bodyParser = require('body-parser');
 const jsonParser = bodyParser.json();
@@ -358,7 +359,36 @@ app.post('/pay', async (req, res) => {
   }
 });
 
+app.post('/payTurfMarket', async (req, res) => {
+  try {
+    const { amount, email, token } = req.body;
+    let decodedToken;
+    try {
+      decodedToken = jwt.verify(token, secretKey);
+    } catch (tokenError) {
+      console.error("Error verifying token:", tokenError);
+      return res.status(401).json({ error: "Invalid or expired token" });
+    }
 
+    const cellphone = decodedToken.cell.toString();
+    console.log(cellphone);
+
+    const response = await axios.post('https://api.paystack.co/transaction/initialize', {
+      amount: amount,
+      email: email,
+      metadata: {
+        customer_token: token
+      }
+    }, {
+      headers: {
+        Authorization: `Bearer ${PAYSTACK_SECRET_KEY_Turf}`
+      }
+    });
+    res.json(response.data);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
 
 app.post("/spinzbetswebhook/webhookV1/url", jsonParser, async function (req, res) {
   try {
