@@ -655,7 +655,7 @@ app.get("/getUserData", async (req, res) => {
   try {
     const decodedToken = jwt.verify(tokenValue, secretKey);
 
-    const snapshot = await db.ref('users').orderByChild('cell').equalTo(decodedToken.cell).once('value');
+    const snapshot = await db.ref('users').orderByChild('email').equalTo(decodedToken.email).once('value');
     const user = snapshot.val();
 
 
@@ -666,10 +666,10 @@ app.get("/getUserData", async (req, res) => {
 
     const name = user[Object.keys(user)[0]].name;
     const surname = user[Object.keys(user)[0]].surname;
-    const cell = user[Object.keys(user)[0]].cell;
+    const email = user[Object.keys(user)[0]].email;
     const balance = user[Object.keys(user)[0]].balance;
 
-    return res.status(200).json({ name: name, cell: cell, surname: surname, balance: balance });
+    return res.status(200).json({ name: name, email: email, surname: surname, balance: balance });
   } catch (err) {
     console.error("Error fetching user info:", err);
     return res.status(500).json({ error: "Internal server error. Please try again later." });
