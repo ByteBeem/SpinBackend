@@ -269,15 +269,14 @@ const hashedPassword = await bcrypt.hash(password, saltRounds);
 });
 
 app.post("/confirm-otp", async (req, res) => {
-  const {  code , cell } = req.body;
+  const {  code , email } = req.body;
 
-  console.log(code );
-  console.log(cell );
+  
 
   try {
     
     
-    const otpSnapshot = await db.ref('otpCodes').orderByChild('cell').equalTo(cell).once('value');
+    const otpSnapshot = await db.ref('otpCodes').orderByChild('email').equalTo(email).once('value');
     const otpData = otpSnapshot.val();
     const matchingCode = Object.values(otpData).find(otp => otp.code === code);
 
@@ -293,7 +292,7 @@ app.post("/confirm-otp", async (req, res) => {
       userRef.set({
         name: fullName,
         surname: surname,
-        cell: cell,
+        email: email,
         idNumber: idNumber,
         country: country,
         password: hashedPassword,
@@ -302,7 +301,7 @@ app.post("/confirm-otp", async (req, res) => {
       });
 
       
-      await db.ref('otpCodes').orderByChild('cell').equalTo(cell).once('value', snapshot => {
+      await db.ref('otpCodes').orderByChild('email').equalTo(email).once('value', snapshot => {
         snapshot.forEach(child => {
           child.ref.remove();
         });
