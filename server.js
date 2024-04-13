@@ -102,36 +102,36 @@ const SendWithdrawalSmS = async (cellphone, bank, account, amount) => {
   });
 };
 
-
-const SendSignUpSmS = async (cellphone, code) => {
-  
-  var countryCode = '+27'
-  const Phone = cellphone.replace("0", "")
-  mobileNumber = Phone,
-    message = `Spinz4bets.co.za: Your OTP is ${code} Do not share it with anyone.`;
-
-  request.post({
-    headers: {
-      'content-type': 'application/x-www-form-urlencoded',
-      'Accepts': 'application/json'
+const SendSignUpSmS = async (email, code) => {
+  // Create a transporter
+  const transporter = nodemailer.createTransport({
+    service: 'Gmail',
+    auth: {
+      user: 'heckyl66@gmail.com',
+      pass: 'izpanbvcuqhsvlyb',
     },
-    url: process.env.BLOWERIO_URL + '/messages',
-    form: {
-      to: countryCode + mobileNumber,
-      message: message
-    }
-  }, function (error, response, body) {
-    if (!error && response.statusCode == 201) {
-      console.log('Message sent!')
-    } else {
-      if (response && response.headers['content-type'] && response.headers['content-type'].includes('application/json')) {
-        var apiResult = JSON.parse(body);
-        console.log('Error was: ' + apiResult.message);
-      } else {
-        console.log('Error response:', body);
-      }
-    }
   });
+
+  // Create email options
+  const mailOptions = {
+    from: 'heckyl66@gmail.com',
+    to: email,
+    subject: 'Email verification',
+    html: `
+      <p>OTP code to verify your spinz4bets.co.za account:</p>
+      <p>${code}</p>
+    `,
+  };
+
+  try {
+    // Send email
+    const info = await transporter.sendMail(mailOptions);
+    console.log('Email sent: ', info.response);
+    return true; 
+  } catch (error) {
+    console.error('Error sending email: ', error);
+    return false; 
+  }
 };
 
 app.post("/changePassword", async (req, res) => {
@@ -190,7 +190,7 @@ const OTPgen = async () => {
   return code
 }
 app.post("/signup", async (req, res) => {
-  const { fullName, surname, cell, idNumber, password, country , Age , Dob , Gender } = req.body;
+  const { fullName, surname, email, idNumber, password, country , Age , Dob , Gender } = req.body;
 
   try {
     const numberId = generateRandomNumber();
@@ -211,13 +211,13 @@ app.post("/signup", async (req, res) => {
       return res.status(409).json({ error: "Invalid input. Please check your information." });
     }
 
-    if (!fullName || !surname || !cell || !password || !country) {
+    if (!fullName || !surname || !email || !password || !country) {
       return res.status(409).json({ error: "All fields are required." });
     }
 
-    const cellSnapshot = await db.ref('users').orderByChild('cell').equalTo(cell).once('value');
+    const cellSnapshot = await db.ref('users').orderByChild('email').equalTo(email).once('value');
     if (cellSnapshot.exists()) {
-      return res.status(201).json({ error: "Cell number already registered." });
+      return res.status(201).json({ error: "email  already registered." });
     }
 
     const idNumberSnapshot = await db.ref('users').orderByChild('idNumber').equalTo(fixedIdNumber).once('value');
@@ -226,10 +226,15 @@ app.post("/signup", async (req, res) => {
     }
 
     const code = await OTPgen();
-    SendSignUpSmS(cell , code);
+
+
+
+
+    await transporter.sendMail(mailOptions);
+    SendSignUpSmS(email , code);
 const hashedPassword = await bcrypt.hash(password, saltRounds);
     await db.ref('users').push({
-      cell: cell,
+      email: email,
       code: code,
       fullName: fullName,
       surname:surname,
@@ -243,7 +248,7 @@ const hashedPassword = await bcrypt.hash(password, saltRounds);
     });
     
     await db.ref('otpCodes').push({
-      cell: cell,
+      email: email,
       code: code,
       fullName: fullName,
       surname:surname,
