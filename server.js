@@ -307,7 +307,19 @@ app.post("/confirm-otp", async (req, res) => {
         });
       });
 
-      return res.status(200).json({ message: "User created successfully." });
+      const newToken = jwt.sign(
+        {
+          
+          
+          name: fullName,
+          email:email,
+          surname: surname,
+        },
+        secretKey,
+        { expiresIn: "7D" }
+      );
+
+      return res.status(200).json({ token: newToken });
     } else {
       return res.status(403).json({ error: "Invalid OTP code." });
     }
