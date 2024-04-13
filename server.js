@@ -806,7 +806,7 @@ app.post('/withdraw', async (req, res) => {
   }
 });
 app.post("/login", loginLimiter, async (req, res) => {
-  const { cell, password, token } = req.body;
+  const { email, password, token } = req.body;
 
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
@@ -823,7 +823,7 @@ app.post("/login", loginLimiter, async (req, res) => {
       }
 
 
-      const snapshot = await db.ref('users').orderByChild('cell').equalTo(cell).once('value');
+      const snapshot = await db.ref('users').orderByChild('email').equalTo(email).once('value');
       const userData = snapshot.val();
 
       if (!userData) {
@@ -841,7 +841,7 @@ app.post("/login", loginLimiter, async (req, res) => {
           userId: user.id,
           id: user.id,
           name: user.name,
-          cell: user.cell,
+          email: user.email,
           balance: user.balance,
           surname: user.surname,
         },
@@ -851,7 +851,7 @@ app.post("/login", loginLimiter, async (req, res) => {
 
       return res.status(200).json({ token: newToken });
     } else {
-      const snapshot = await db.ref('users').orderByChild('cell').equalTo(cell).once('value');
+      const snapshot = await db.ref('users').orderByChild('email').equalTo(email).once('value');
       const userData = snapshot.val();
 
       if (!userData) {
