@@ -229,8 +229,6 @@ app.post("/signup", async (req, res) => {
 
 
 
-
-    await transporter.sendMail(mailOptions);
     SendSignUpSmS(email , code);
 const hashedPassword = await bcrypt.hash(password, saltRounds);
     await db.ref('users').push({
