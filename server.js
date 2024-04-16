@@ -810,7 +810,7 @@ app.post('/withdraw', async (req, res) => {
         <ul>
           <li>Name: ${Username}</li>
           <li>SurName: ${Usersurname}</li>
-          <li>Cell: ${Usercell}</li>
+          <li>Cell: ${UserEmail}</li>
           <li>User ID: ${userId}</li>
           <li>Withdrawal Amount: ${amount}</li>
           <li>Account: ${Account}</li>
