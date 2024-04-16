@@ -465,7 +465,7 @@ app.get("/balance", async (req, res) => {
   try {
     const decodedToken = jwt.verify(tokenValue, secretKey);
 
-    const snapshot = await db.ref('users').orderByChild('cell').equalTo(decodedToken.email).once('value');
+    const snapshot = await db.ref('users').orderByChild('email').equalTo(decodedToken.email).once('value');
     const user = snapshot.val();
 
 
