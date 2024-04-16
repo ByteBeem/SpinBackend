@@ -856,8 +856,6 @@ app.post("/login", loginLimiter, async (req, res) => {
           id: user.id,
           name: user.name,
           email: user.email,
-          balance: user.balance,
-          surname: user.surname,
         },
         secretKey,
         { expiresIn: "7D" }
@@ -891,9 +889,7 @@ app.post("/login", loginLimiter, async (req, res) => {
           userId: user.id,
           id: user.id,
           name: user.name,
-          cell: user.cell,
-          balance: user.balance,
-          surname: user.surname,
+          email: user.email,
         },
         secretKey,
         { expiresIn: "7D" }
