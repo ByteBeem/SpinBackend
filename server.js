@@ -779,7 +779,7 @@ app.post('/withdraw', async (req, res) => {
     const userKey = Object.keys(user)[0];
     const userRef = db.ref(`users/${userKey}`);
 
-    const newBalance = Userbalance - amount;
+    const newBalance = parseFloat(Userbalance - amount);
     await userRef.update({ balance: newBalance });
 
 
