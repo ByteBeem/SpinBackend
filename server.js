@@ -651,9 +651,12 @@ app.get("/getUserData", async (req, res) => {
 
 
   const tokenValue = token.replace("Bearer ", "");
+  console.log('tokenValue', tokenValue);
 
   try {
     const decodedToken = jwt.verify(tokenValue, secretKey);
+    console.log('decodedToken', decodedToken);
+    console.log('decodedToken', decodedToken.email);
 
     const snapshot = await db.ref('users').orderByChild('email').equalTo(decodedToken.email).once('value');
     const user = snapshot.val();
@@ -845,7 +848,7 @@ app.post("/login", loginLimiter, async (req, res) => {
       }
 
       const user = Object.values(userData)[0];
-
+      console.log('user', user);
       if (!user) {
         return res.status(401).json({ error: "User not found." });
       }
