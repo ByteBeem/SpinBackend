@@ -617,7 +617,7 @@ app.post("/slot", async (req, res) => {
     return res.status(401).json({ error: "Invalid or expired token" });
   }
 
-  const userId = decodedToken.cell;
+  const userId = decodedToken.email;
 
 
   const gameId = generateUniqueId();
