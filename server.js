@@ -353,12 +353,12 @@ app.post('/pay', async (req, res) => {
       return res.status(401).json({ error: "Invalid or expired token" });
     }
 
-    const cellphone = decodedToken.cell.toString();
-    console.log(cellphone);
+    const useremail = decodedToken.email.toString();
+    
 
     const response = await axios.post('https://api.paystack.co/transaction/initialize', {
       amount: amount,
-      email: email,
+      email: useremail,
       metadata: {
         customer_token: token
       }
