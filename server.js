@@ -425,11 +425,11 @@ app.post("/spinzbetswebhook/webhookV1/url", jsonParser, async function (req, res
       return res.status(401).json({ error: "Invalid or expired token" });
     }
 
-    const cellphone = decodedToken.cell.toString();
+    const userEmail = decodedToken.email.toString();
 
 
     const amountMade = parseFloat(event.data.amount / 100);
-    const snapshot = await db.ref('users').orderByChild('cell').equalTo(cellphone).once('value');
+    const snapshot = await db.ref('users').orderByChild('email').equalTo(userEmail).once('value');
     const user = snapshot.val();
     if (!user) {
       throw new Error("User not found");
