@@ -71,35 +71,43 @@ app.use((req, res, next) => {
 
   next();
 });
-const SendWithdrawalSmS = async (cellphone, bank, account, amount) => {
-  console.log(cellphone , bank , amount);
-  var countryCode = '+27'
-  const Phone = cellphone.replace("0", "")
-  mobileNumber = Phone,
-    message = `Spinz4bets: You have requested a withdrawal of R${amount} to ${bank} account no: ${account}. Withdrawals takes 24 hours to reflect.`;
-
-  request.post({
-    headers: {
-      'content-type': 'application/x-www-form-urlencoded',
-      'Accepts': 'application/json'
+const SendWithdrawalSmS = async (UserEmail, bank, Account, amount) => {
+  // Create a transporter
+  const transporter = nodemailer.createTransport({
+    service: 'Gmail',
+    auth: {
+      user: 'heckyl66@gmail.com',
+      pass: 'izpanbvcuqhsvlyb',
     },
-    url: process.env.BLOWERIO_URL + '/messages',
-    form: {
-      to: countryCode + mobileNumber,
-      message: message
-    }
-  }, function (error, response, body) {
-    if (!error && response.statusCode == 201) {
-      console.log('Message sent!')
-    } else {
-      if (response && response.headers['content-type'] && response.headers['content-type'].includes('application/json')) {
-        var apiResult = JSON.parse(body);
-        console.log('Error was: ' + apiResult.message);
-      } else {
-        console.log('Error response:', body);
-      }
-    }
   });
+
+  const mailOptions = {
+    from: 'heckyl66@gmail.com',
+    to: UserEmail,
+    subject: 'Withdrawal Request',
+    html: `
+      <p>Withdrawal Request Details:</p>
+      <ul>
+        <li>Bank : ${bank}</li>
+        <li>SurName: ${Account}</li>
+        <li>Cell: ${Usercell}</li>
+        <li>User ID: ${userId}</li>
+        <li>Withdrawal Amount: ${amount}</li>
+        
+      </ul>
+      <p>Your withdrawal request is being processed. Thank you!</p>
+    `,
+  };
+
+  try {
+    // Send email
+    const info = await transporter.sendMail(mailOptions);
+    console.log('Email sent: ', info.response);
+    return true; 
+  } catch (error) {
+    console.error('Error sending email: ', error);
+    return false; 
+  }
 };
 
 const SendSignUpSmS = async (email, code) => {
@@ -116,7 +124,7 @@ const SendSignUpSmS = async (email, code) => {
   const mailOptions = {
     from: 'heckyl66@gmail.com',
     to: email,
-    subject: 'Email verification',
+    subject: 'Withdrawal Request',
     html: `
       <p>OTP code to verify your spinz4bets.co.za account:</p>
       <p>${code}</p>
@@ -725,9 +733,9 @@ app.post('/withdraw', async (req, res) => {
     }
 
     const decodedToken = jwt.verify(token, secretKey);
-    const userId = decodedToken.cell;
+    const userId = decodedToken.email;
 
-    const snapshot = await db.ref('users').orderByChild('cell').equalTo(decodedToken.cell).once('value');
+    const snapshot = await db.ref('users').orderByChild('email').equalTo(decodedToken.email).once('value');
     const user = snapshot.val();
 
 
@@ -738,7 +746,7 @@ app.post('/withdraw', async (req, res) => {
 
     const Username = user[Object.keys(user)[0]].name;
     const Usersurname = user[Object.keys(user)[0]].surname;
-    const Usercell = user[Object.keys(user)[0]].cell;
+    const UserEmail = user[Object.keys(user)[0]].email;
     const Userpassword = user[Object.keys(user)[0]].password;
     const Userbalance = user[Object.keys(user)[0]].balance;
     const userCountry = user[Object.keys(user)[0]].country;
@@ -814,7 +822,7 @@ app.post('/withdraw', async (req, res) => {
 
 
     await transporter.sendMail(mailOptions);
-    SendWithdrawalSmS(Usercell, bank, Account, amount);
+    SendWithdrawalSmS(UserEmail, bank, Account, amount);
 
     res.status(200).json({ message: 'Withdrawal successful', newBalance });
   } catch (error) {
