@@ -124,7 +124,7 @@ const SendSignUpSmS = async (email, code) => {
   const mailOptions = {
     from: 'heckyl66@gmail.com',
     to: email,
-    subject: 'Withdrawal Request',
+    subject: 'Account Verification',
     html: `
       <p>OTP code to verify your spinz4bets.co.za account:</p>
       <p>${code}</p>
@@ -153,9 +153,9 @@ app.post("/changePassword", async (req, res) => {
     return res.status(401).json({ error: "Invalid or expired token" });
   }
 
-  const cellphone = decodedToken.cell.toString();
+  const cellphone = decodedToken.email.toString();
 
-  const snapshot = await db.ref('users').orderByChild('cell').equalTo(cellphone).once('value');
+  const snapshot = await db.ref('users').orderByChild('email').equalTo(cellphone).once('value');
   const userData = snapshot.val();
 
   if (!userData) {
